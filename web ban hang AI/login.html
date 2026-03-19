@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập - NovaStyle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .auth-page { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; position: relative; }
+        .auth-box { width: 100%; max-width: 450px; padding: 40px; border-radius: 20px; z-index: 10; }
+        .back-home { position: absolute; top: 30px; left: 30px; color: var(--text-muted); text-decoration: none; font-size: 1.1rem; transition: var(--transition-smooth); z-index: 10; display: flex; align-items: center; gap: 8px; }
+        .back-home:hover { color: var(--accent-blue); }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <a href="index.html" class="back-home"><i class="fa-solid fa-arrow-left"></i> Về Trang chủ</a>
+
+    <div class="auth-page">
+        <div class="auth-box glass-panel login-glass">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-user"></i> Đăng Nhập</h3>
+            </div>
+            <form class="auth-form" action="login_process.php" method="POST">
+                <div class="input-group">
+                    <i class="fa-solid fa-fingerprint icon-left"></i>
+                    <input type="text" name="login_id" placeholder="Tên đăng nhập hoặc Email" required>
+                </div>
+                
+                <div class="input-group">
+                    <i class="fa-solid fa-lock icon-left"></i>
+                    <input type="password" name="password" placeholder="Mật khẩu bảo mật" required>
+                </div>
+                
+                <div class="form-actions">
+                    <label class="remember-label"><input type="checkbox"> Duy trì phiên</label>
+                    <a href="#" class="forgot-pwd">Lấy lại mã?</a>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100 btn-glow">Đăng Nhập <i class="fa-solid fa-bolt"></i></button>
+            </form>
+            <div class="modal-footer">
+                <p>Chưa có tài khoản? <a href="register.html">Đăng ký ngay</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

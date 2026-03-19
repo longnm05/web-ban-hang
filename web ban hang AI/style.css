@@ -102,6 +102,79 @@ body {
     -webkit-text-fill-color: transparent;
 }
 
+/* Styling cho Menu mới */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 40px; /* Khoảng cách giữa Logo và Menu */
+}
+
+.main-menu {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+}
+
+.menu-item {
+    color: var(--text-main);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: var(--transition-smooth);
+    position: relative;
+    padding: 5px 0;
+}
+
+/* Hiệu ứng gạch chân gradient khi hover */
+.menu-item:hover, .menu-item.active {
+    color: var(--accent-blue);
+}
+
+.menu-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background: var(--primary-gradient);
+    transition: var(--transition-smooth);
+}
+
+.menu-item:hover::after, .menu-item.active::after {
+    width: 100%;
+}
+
+/* Ẩn menu chữ trên màn hình nhỏ để tránh vỡ giao diện */
+@media (max-width: 1024px) {
+    .main-menu {
+        display: none;
+    }
+}
+/* Nhóm tài khoản ở góc phải */
+.auth-group {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Khoảng cách giữa chữ và icon */
+    border-left: 1px solid var(--glass-border); /* Thêm vạch kẻ phân cách nhẹ nhàng */
+    padding-left: 20px;
+    margin-left: 5px;
+}
+
+/* Ẩn chữ trên thiết bị di động để không bị tràn màn hình, chỉ giữ lại icon */
+@media (max-width: 1024px) {
+    .main-menu, 
+    #openAuthBtn {
+        display: none;
+    }
+    
+    .auth-group {
+        border-left: none;
+        padding-left: 0;
+        margin-left: 0;
+    }
+}
+
 .smart-search {
     flex: 0 1 500px;
     position: relative;

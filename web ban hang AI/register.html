@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Ký - NovaStyle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .auth-page { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 40px 20px; position: relative; }
+        .auth-box { width: 100%; max-width: 500px; padding: 40px; border-radius: 20px; z-index: 10; }
+        .back-home { position: absolute; top: 30px; left: 30px; color: var(--text-muted); text-decoration: none; font-size: 1.1rem; transition: var(--transition-smooth); z-index: 10; display: flex; align-items: center; gap: 8px; }
+        .back-home:hover { color: var(--accent-blue); }
+        
+        /* Chỉnh style riêng cho Select và Textarea ăn khớp với Glassmorphism */
+        select.glass-input, textarea.glass-input {
+            width: 100%; padding: 12px 15px 12px 45px; background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border); border-radius: 10px; color: white;
+            outline: none; font-family: var(--font-body); transition: var(--transition-smooth);
+        }
+        select.glass-input:focus, textarea.glass-input:focus {
+            border-color: var(--accent-purple); box-shadow: 0 0 10px rgba(138, 43, 226, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        select.glass-input option { color: #000; } /* Tránh chữ trắng trên nền trắng ở menu xổ xuống */
+        textarea.glass-input { resize: vertical; min-height: 80px; }
+        .textarea-icon { top: 20px !important; transform: none !important; }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <a href="index.html" class="back-home"><i class="fa-solid fa-arrow-left"></i> Về Trang chủ</a>
+
+    <div class="auth-page">
+        <div class="auth-box glass-panel login-glass">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-user-plus"></i> Đăng Ký</h3>
+            </div>
+            <form class="auth-form" action="register_process.php" method="POST">
+                
+                <div class="input-group">
+                    <i class="fa-solid fa-id-card icon-left"></i>
+                    <input type="text" name="full_name" placeholder="Họ và Tên" required>
+                </div>
+
+                <div class="input-group">
+                    <i class="fa-solid fa-user icon-left"></i>
+                    <input type="text" name="username" placeholder="Tên đăng nhập" required>
+                </div>
+
+                <div class="input-group">
+                    <i class="fa-solid fa-lock icon-left"></i>
+                    <input type="password" name="password" placeholder="Mật khẩu bảo mật" required>
+                </div>
+
+                <div class="input-group">
+                    <i class="fa-solid fa-envelope icon-left"></i>
+                    <input type="email" name="email" placeholder="Email liên hệ" required>
+                </div>
+
+                <div class="input-group">
+                    <i class="fa-solid fa-venus-mars icon-left"></i>
+                    <select class="glass-input" name="gender" required>
+                        <option value="" disabled selected>Chọn giới tính</option>
+                        <option value="male">Nam</option>
+                        <option value="female">Nữ</option>
+                        <option value="unisex">Unisex / Khác</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <i class="fa-solid fa-location-dot icon-left textarea-icon"></i>
+                    <textarea class="glass-input" name="address" placeholder="Địa chỉ giao hàng mặc định..." required></textarea>
+                </div>
+
+                <div class="form-actions" style="justify-content: center; margin-bottom: 25px;">
+                    <label class="remember-label" style="font-size: 0.85rem;">
+                        <input type="checkbox" required> Tôi đồng ý với Điều khoản
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 btn-glow" style="background: var(--accent-blue); box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);">Đăng Ký <i class="fa-solid fa-arrow-right"></i></button>
+            </form>
+            <div class="modal-footer">
+                <p>Đã có tài khoản? <a href="login.html">Đăng nhập ngay</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

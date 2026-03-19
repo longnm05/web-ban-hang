@@ -184,42 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('input', performSearch);
 
     // 5. Auth Modal Logic (Login/Register)
-    const loginModal = document.getElementById('loginModal');
-    const openLoginBtn = document.getElementById('openLoginBtn');
-    const closeLoginBtn = document.getElementById('closeLoginBtn');
-
-    // Toggle Sections
-    const loginSection = document.getElementById('loginSection');
-    const registerSection = document.getElementById('registerSection');
-    const showRegisterLink = document.getElementById('showRegister');
-    const showLoginLink = document.getElementById('showLogin');
-
-    openLoginBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        loginModal.classList.add('active');
-        // Luôn hiển thị Đăng nhập làm mặc định khi mở lại Modal
-        loginSection.style.display = 'block';
-        registerSection.style.display = 'none';
-    });
-
-    closeLoginBtn.addEventListener('click', () => {
-        loginModal.classList.remove('active');
-    });
-
-    // Chuyển sang form Đăng Ký
-    showRegisterLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        loginSection.style.display = 'none';
-        registerSection.style.display = 'block';
-    });
-
-    // Chuyển về form Đăng Nhập
-    showLoginLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        registerSection.style.display = 'none';
-        loginSection.style.display = 'block';
-    });
-
+    
     // 6. Cart Sidebar Logic
     const cartOverlay = document.getElementById('cartOverlay');
     const cartSidebar = document.getElementById('cartSidebar');
