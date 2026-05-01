@@ -232,7 +232,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
 
-    <a href="index.html" class="back-home"><i class="fa-solid fa-arrow-left"></i></a>
+    <a href="index.php" class="back-home"><i class="fa-solid fa-arrow-left"></i></a>
 
     <div class="split-login-container">
         <!-- Customer Login -->
@@ -261,7 +261,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                     <button type="submit" class="submit-btn">Đăng Nhập <i class="fa-solid fa-right-to-bracket"></i></button>
                     <p style="text-align: center; margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
-                        Chưa có tài khoản? <a href="register.html" style="color: var(--accent-purple); text-decoration: none; font-weight: 600;">Đăng ký ngay</a>
+                        Chưa có tài khoản? <a href="register.php" style="color: var(--accent-purple); text-decoration: none; font-weight: 600;">Đăng ký ngay</a>
                     </p>
                 </form>
             </div>

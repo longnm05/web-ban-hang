@@ -43,9 +43,9 @@ $products = $stmt->fetchAll();
             <button class="ai-btn"><i class="fa-solid fa-arrow-right"></i></button>
         </div>
         <div class="nav-links">
-            <a href="products.html" class="nav-item" style="text-decoration:none; color:var(--text-main); font-weight:600; margin-right:15px;">Sản Phẩm</a>
-            <a href="products.html?category=nam" class="nav-item" style="text-decoration:none; color:var(--text-main); font-weight:600; margin-right:15px;">Nam</a>
-            <a href="products.html?category=nu" class="nav-item" style="text-decoration:none; color:var(--text-main); font-weight:600; margin-right:15px;">Nữ</a>
+            <a href="products.php" class="nav-item" style="text-decoration:none; color:var(--text-main); font-weight:600; margin-right:15px;">Sản Phẩm</a>
+            <a href="products.php?category=nam" class="nav-item" style="text-decoration:none; color:var(--text-main); font-weight:600; margin-right:15px;">Nam</a>
+            <a href="products.php?category=nu" class="nav-item" style="text-decoration:none; color:var(--text-main); font-weight:600; margin-right:15px;">Nữ</a>
             <a href="#" class="nav-icon"><i class="fa-solid fa-heart"></i><span class="badge">2</span></a>
             <a href="#" class="nav-icon" id="openCartBtn"><i class="fa-solid fa-cart-shopping"></i><span class="badge"
                     id="cartBadge">0</span></a>
@@ -66,7 +66,7 @@ $products = $stmt->fetchAll();
             <p>Trải nghiệm e-commerce đỉnh cao. Trợ lý AI của chúng tôi sẽ phân tích phong cách, thói quen để mang lại
                 cho bạn những đề xuất hoàn hảo nhất.</p>
             <div class="hero-actions">
-                <button class="btn btn-primary" onclick="window.location.href='products.html'">Khám phá Ngay <i class="fa-solid fa-arrow-right"></i></button>
+                <button class="btn btn-primary" onclick="window.location.href='products.php'">Khám phá Ngay <i class="fa-solid fa-arrow-right"></i></button>
                 <button class="btn btn-secondary">Xem Video Demo <i class="fa-solid fa-play"></i></button>
             </div>
         </div>
@@ -86,23 +86,23 @@ $products = $stmt->fetchAll();
             <h2 style="font-size: 2rem;"><i class="fa-solid fa-tags"></i> Danh Mục Phổ Biến</h2>
         </div>
         <div style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px; scrollbar-width: thin;" id="categoryFilters">
-            <a href="products.html?category=nam" style="text-decoration: none; color: inherit; min-width: 150px; background: rgba(0,0,0,0.03); border: 1px solid var(--glass-border); border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(138,43,226,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'">
+            <a href="products.php?category=nam" style="text-decoration: none; color: inherit; min-width: 150px; background: rgba(0,0,0,0.03); border: 1px solid var(--glass-border); border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(138,43,226,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'">
                 <i class="fa-solid fa-shirt" style="font-size: 2rem; color: var(--accent-blue); margin-bottom: 10px;"></i>
                 <h4 style="margin:0;">Áo Nam</h4>
             </a>
-            <a href="products.html?category=giay" style="text-decoration: none; color: inherit; min-width: 150px; background: rgba(0,0,0,0.03); border: 1px solid var(--glass-border); border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(138,43,226,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'">
+            <a href="products.php?category=giay" style="text-decoration: none; color: inherit; min-width: 150px; background: rgba(0,0,0,0.03); border: 1px solid var(--glass-border); border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(138,43,226,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'">
                 <i class="fa-solid fa-shoe-prints" style="font-size: 2rem; color: var(--accent-purple); margin-bottom: 10px;"></i>
                 <h4 style="margin:0;">Giày Dép</h4>
             </a>
-            <a href="products.html?category=phukien" style="text-decoration: none; color: inherit; min-width: 150px; background: rgba(0,0,0,0.03); border: 1px solid var(--glass-border); border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(138,43,226,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'">
+            <a href="products.php?category=phukien" style="text-decoration: none; color: inherit; min-width: 150px; background: rgba(0,0,0,0.03); border: 1px solid var(--glass-border); border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(138,43,226,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'">
                 <i class="fa-solid fa-glasses" style="font-size: 2rem; color: #ff416c; margin-bottom: 10px;"></i>
                 <h4 style="margin:0;">Phụ Kiện</h4>
             </a>
-            <a href="products.html?category=outwear" style="text-decoration: none; color: inherit; min-width: 150px; background: rgba(0,0,0,0.03); border: 1px solid var(--glass-border); border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(138,43,226,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'">
+            <a href="products.php?category=outwear" style="text-decoration: none; color: inherit; min-width: 150px; background: rgba(0,0,0,0.03); border: 1px solid var(--glass-border); border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(138,43,226,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'">
                 <i class="fa-solid fa-hat-cowboy" style="font-size: 2rem; color: #00ff88; margin-bottom: 10px;"></i>
                 <h4 style="margin:0;">Mũ Nón/Áo Khoác</h4>
             </a>
-            <a href="products.html" style="text-decoration: none; color: inherit; min-width: 150px; background: rgba(0,0,0,0.03); border: 1px solid var(--glass-border); border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(138,43,226,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'">
+            <a href="products.php" style="text-decoration: none; color: inherit; min-width: 150px; background: rgba(0,0,0,0.03); border: 1px solid var(--glass-border); border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(138,43,226,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'">
                 <i class="fa-solid fa-border-all" style="font-size: 2rem; color: #ffaa00; margin-bottom: 10px;"></i>
                 <h4 style="margin:0;">Tất Cả</h4>
             </a>

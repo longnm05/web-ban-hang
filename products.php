@@ -181,9 +181,9 @@ $products = $stmt->fetchAll();
             <i class="fa-solid fa-microchip" style="background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i> NovaStyle
         </div>
         <div class="nav-links">
-            <a href="products.html" class="nav-item active">Khám Phá</a>
-            <a href="products.html?category=nam" class="nav-item">Nam</a>
-            <a href="products.html?category=nu" class="nav-item">Nữ</a>
+            <a href="products.php" class="nav-item active">Khám Phá</a>
+            <a href="products.php?category=nam" class="nav-item">Nam</a>
+            <a href="products.php?category=nu" class="nav-item">Nữ</a>
             <a href="#" class="nav-icon" id="openCartBtn"><i class="fa-solid fa-bag-shopping"></i><span class="badge" id="cartBadge">0</span></a>
             <a href="history.php" class="nav-icon" title="Lịch Sử Đơn Hàng"><i class="fa-solid fa-clock-rotate-left"></i></a>
             <a href="profile.php" class="nav-icon" title="Hồ Sơ Của Tôi"><i class="fa-solid fa-user"></i></a>
