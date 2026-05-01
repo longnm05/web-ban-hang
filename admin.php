@@ -443,8 +443,8 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
         <main class="admin-main">
             <div class="admin-header">
                 <div>
-                    <h1>Hệ Thống Phân Tích Tổng Quan</h1>
-                    <p style="color: var(--text-muted);">Cập nhật dữ liệu thời gian thực theo thuật toán lượng tử</p>
+                    <h1>Quản Trị Hệ Thống</h1>
+                    <p style="color: var(--text-muted);">Thống kê dữ liệu kinh doanh thời gian thực</p>
                 </div>
                 <div>
                     <button class="btn btn-primary btn-glow" style="background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);">
@@ -592,8 +592,9 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
                                     </select>
                                 </form>
                             </td>
-                            <td>
-                                <a href="admin.php?action=delete_order&id=<?= $o['id'] ?>" onclick="return confirm('Bạn có chắc muốn xóa đơn hàng này?')" style="background: transparent; border: none; color: #ff4d4d; cursor: pointer; text-decoration: none; padding: 5px;"><i class="fa-solid fa-trash"></i></a>
+                             <td>
+                                <a href="invoice.php?id=<?= $o['id'] ?>" target="_blank" style="background: transparent; border: none; color: var(--accent-blue); cursor: pointer; text-decoration: none; padding: 5px; margin-right: 5px;" title="Xem chi tiết"><i class="fa-solid fa-eye"></i></a>
+                                <a href="admin.php?action=delete_order&id=<?= $o['id'] ?>" onclick="return confirm('Bạn có chắc muốn xóa đơn hàng này?')" style="background: transparent; border: none; color: #ff4d4d; cursor: pointer; text-decoration: none; padding: 5px;" title="Xóa đơn hàng"><i class="fa-solid fa-trash"></i></a>
                             </td>
                         </tr>
                         <?php endforeach; ?>
