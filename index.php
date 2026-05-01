@@ -49,6 +49,9 @@ $products = $stmt->fetchAll();
             <a href="#" class="nav-icon"><i class="fa-solid fa-heart"></i><span class="badge">2</span></a>
             <a href="#" class="nav-icon" id="openCartBtn"><i class="fa-solid fa-cart-shopping"></i><span class="badge"
                     id="cartBadge">0</span></a>
+            <a href="history.php" class="nav-icon" title="Lịch Sử Đơn Hàng">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </a>
             <a href="profile.php" class="nav-icon" title="Hồ Sơ Của Tôi">
                 <i class="fa-solid fa-circle-user" style="font-size: 1.5rem; color: var(--accent-purple);"></i>
             </a>
@@ -198,8 +201,7 @@ $products = $stmt->fetchAll();
                 <span class="total-price gradient-text" id="cartTotal"
                     style="font-size: 1.5rem; font-weight:800;">$0.00</span>
             </div>
-            <button class="btn btn-primary w-100 btn-glow" id="checkoutBtn"
-                onclick="alert('Đang xử lý kết nối máy chủ thanh toán lượng tử...')">Tiến Hành Thanh Toán</button>
+            <button class="btn btn-primary w-100 btn-glow" id="checkoutBtn">Tiến Hành Thanh Toán</button>
         </div>
     </div>
 

@@ -185,6 +185,7 @@ $products = $stmt->fetchAll();
             <a href="products.html?category=nam" class="nav-item">Nam</a>
             <a href="products.html?category=nu" class="nav-item">Nữ</a>
             <a href="#" class="nav-icon" id="openCartBtn"><i class="fa-solid fa-bag-shopping"></i><span class="badge" id="cartBadge">0</span></a>
+            <a href="history.php" class="nav-icon" title="Lịch Sử Đơn Hàng"><i class="fa-solid fa-clock-rotate-left"></i></a>
             <a href="profile.php" class="nav-icon" title="Hồ Sơ Của Tôi"><i class="fa-solid fa-user"></i></a>
         </div>
     </nav>
@@ -316,7 +317,7 @@ $products = $stmt->fetchAll();
                 <span>Tổng cộng:</span>
                 <span class="total-price" id="cartTotal">$0.00</span>
             </div>
-            <button class="btn btn-primary" style="width: 100%; margin-top: 15px;" onclick="window.location.href='checkout.html'">Tiến Hành Thanh Toán</button>
+            <button class="btn btn-primary" id="checkoutBtn" style="width: 100%; margin-top: 15px;">Tiến Hành Thanh Toán</button>
         </div>
     </div>
 

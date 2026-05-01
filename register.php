@@ -8,10 +8,15 @@ $success = '';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $fullName = trim($_POST['fullname']);
     $email = trim($_POST['email']);
+    $phone = trim($_POST['phone'] ?? '');
+    $address = trim($_POST['address'] ?? '');
     $password = $_POST['password'];
     $confirmPassword = $_POST['confirm_password'];
+    $terms = isset($_POST['terms']) ? true : false;
 
-    if ($password !== $confirmPassword) {
+    if (!$terms) {
+        $error = "Bạn phải xác nhận đồng ý với các điều khoản!";
+    } elseif ($password !== $confirmPassword) {
         $error = "Mật khẩu xác nhận không khớp!";
     } else {
         // Kiểm tra email đã tồn tại
@@ -24,8 +29,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Using a simple hash prefix to match db data style or just plain text
             $hashed_password = 'hashed_' . $password; 
             
-            $stmtInsert = $conn->prepare("INSERT INTO users (full_name, email, password_hash, role) VALUES (?, ?, ?, 'customer')");
-            if ($stmtInsert->execute([$fullName, $email, $hashed_password])) {
+            $stmtInsert = $conn->prepare("INSERT INTO users (full_name, email, phone, address, password_hash, role) VALUES (?, ?, ?, ?, ?, 'customer')");
+            if ($stmtInsert->execute([$fullName, $email, $phone, $address, $hashed_password])) {
                 $success = "Đăng ký thành công! Đang chuyển hướng...";
                 header("refresh:2;url=login.php");
             } else {
@@ -193,7 +198,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <div class="form-group">
                     <i class="fa-solid fa-phone"></i>
-                    <input type="text" name="phone" placeholder="Số điện thoại">
+                    <input type="text" name="phone" placeholder="Số điện thoại" required>
+                </div>
+                <div class="form-group">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <input type="text" name="address" placeholder="Địa chỉ" required>
                 </div>
                 <div class="form-group">
                     <i class="fa-solid fa-lock"></i>
@@ -202,6 +211,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div class="form-group">
                     <i class="fa-solid fa-lock"></i>
                     <input type="password" name="confirm_password" placeholder="Xác nhận mật khẩu" required>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                    <input type="checkbox" name="terms" id="terms" required style="width: auto; padding: 0;">
+                    <label for="terms" style="font-size: 0.9rem; color: var(--text-main); cursor: pointer;">Tôi đã đọc và đồng ý với <a href="#" style="color: var(--accent-purple); text-decoration: none;">Điều khoản dịch vụ</a></label>
                 </div>
                 
                 <button type="submit" class="submit-btn">Đăng Ký <i class="fa-solid fa-user-plus"></i></button>

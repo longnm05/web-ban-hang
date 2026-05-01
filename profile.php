@@ -343,6 +343,7 @@ $orders = $stmtOrders->fetchAll();
                                 <th>Ngày Đặt</th>
                                 <th>Tổng Tiền</th>
                                 <th>Trạng Thái</th>
+                                <th>Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -357,6 +358,9 @@ $orders = $stmtOrders->fetchAll();
                                     <?php else: ?>
                                         <span class="status-badge status-processing">Đang xử lý</span>
                                     <?php endif; ?>
+                                </td>
+                                <td>
+                                    <a href="invoice.php?id=<?= $o['id'] ?>" style="color: var(--accent-purple); text-decoration: none; font-weight: 600;"><i class="fa-solid fa-file-invoice"></i> Xem</a>
                                 </td>
                             </tr>
                             <?php endforeach; ?>

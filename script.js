@@ -423,4 +423,51 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // 8. Checkout Logic
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', () => {
+            if (cart.length === 0) {
+                alert('Giỏ hàng của bạn đang trống!');
+                return;
+            }
+            
+            const originalText = checkoutBtn.innerHTML;
+            checkoutBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+            checkoutBtn.disabled = true;
+
+            fetch('checkout.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ cart: cart })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Thanh toán thành công! Mã đơn hàng của bạn là: #' + data.order_id);
+                    // Xóa giỏ hàng sau khi thanh toán thành công
+                    cart = [];
+                    saveCart();
+                    // Chuyển hướng tới trang hóa đơn hoặc lịch sử
+                    window.location.href = 'invoice.php?id=' + data.order_id;
+                } else {
+                    alert('Lỗi: ' + data.message);
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại!');
+            })
+            .finally(() => {
+                checkoutBtn.innerHTML = originalText;
+                checkoutBtn.disabled = false;
+            });
+        });
+    }
+
 });
