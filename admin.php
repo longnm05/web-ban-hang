@@ -443,8 +443,7 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
         <main class="admin-main">
             <div class="admin-header">
                 <div>
-                    <h1>Quản Trị Hệ Thống</h1>
-                    <p style="color: var(--text-muted);">Thống kê dữ liệu kinh doanh thời gian thực</p>
+                    <!-- Tiêu đề đã được lược bỏ theo yêu cầu -->
                 </div>
                 <div>
                     <button class="btn btn-primary btn-glow" style="background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);">
