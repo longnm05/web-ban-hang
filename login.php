@@ -17,6 +17,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['role'] = $user['role'];
         $_SESSION['full_name'] = $user['full_name'];
+        // Ưu tiên giới tính vừa chọn để AI gợi ý ngay, nếu không lấy từ DB
+        $_SESSION['gender'] = $_POST['login_gender'] ?? $user['gender'];
 
         if ($role == 'admin') {
             header("Location: admin.php");
@@ -254,6 +256,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="form-group">
                         <i class="fa-solid fa-lock"></i>
                         <input type="password" name="password" placeholder="Mật khẩu (bất kỳ)" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 10px; font-size: 0.9rem; color: var(--text-muted);">Bạn muốn AI gợi ý sản phẩm cho:</label>
+                        <div style="display: flex; gap: 20px;">
+                            <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                <input type="radio" name="login_gender" value="nam" checked> Nam
+                            </label>
+                            <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                <input type="radio" name="login_gender" value="nu"> Nữ
+                            </label>
+                        </div>
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 0.85rem;">
                         <label style="color: var(--text-muted);"><input type="checkbox"> Ghi nhớ</label>

@@ -7,6 +7,7 @@ $success = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $fullName = trim($_POST['fullname']);
+    $gender = $_POST['gender'] ?? '';
     $email = trim($_POST['email']);
     $phone = trim($_POST['phone'] ?? '');
     $address = trim($_POST['address'] ?? '');
@@ -29,8 +30,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Using a simple hash prefix to match db data style or just plain text
             $hashed_password = 'hashed_' . $password; 
             
-            $stmtInsert = $conn->prepare("INSERT INTO users (full_name, email, phone, address, password_hash, role) VALUES (?, ?, ?, ?, ?, 'customer')");
-            if ($stmtInsert->execute([$fullName, $email, $phone, $address, $hashed_password])) {
+            $stmtInsert = $conn->prepare("INSERT INTO users (full_name, gender, email, phone, address, password_hash, role) VALUES (?, ?, ?, ?, ?, ?, 'customer')");
+            if ($stmtInsert->execute([$fullName, $gender, $email, $phone, $address, $hashed_password])) {
                 $success = "Đăng ký thành công! Đang chuyển hướng...";
                 header("refresh:2;url=login.php");
             } else {
@@ -191,6 +192,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div class="form-group">
                     <i class="fa-solid fa-user"></i>
                     <input type="text" name="fullname" placeholder="Họ và tên" required>
+                </div>
+                <div class="form-group">
+                    <i class="fa-solid fa-venus-mars"></i>
+                    <select name="gender" required style="width: 100%; padding: 12px 15px 12px 45px; background: rgba(0, 0, 0, 0.05); border: 1px solid var(--glass-border); border-radius: 10px; color: var(--text-main); font-family: var(--font-body);">
+                        <option value="" disabled selected>Chọn giới tính</option>
+                        <option value="nam">Nam</option>
+                        <option value="nu">Nữ</option>
+                        <option value="khac">Khác</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <i class="fa-solid fa-envelope"></i>
