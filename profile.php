@@ -15,10 +15,14 @@ $success_msg = '';
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['action']) && $_POST['action'] == 'update_profile') {
         $fullname = $_POST['fullname'];
-        // Demo: Cập nhật tên vào bảng users
-        $stmt = $conn->prepare("UPDATE users SET full_name = ? WHERE id = ?");
-        if ($stmt->execute([$fullname, $user_id])) {
+        $phone = $_POST['phone'];
+        $address = $_POST['address'];
+        $gender = $_POST['gender'];
+        
+        $stmt = $conn->prepare("UPDATE users SET full_name = ?, phone = ?, address = ?, gender = ? WHERE id = ?");
+        if ($stmt->execute([$fullname, $phone, $address, $gender, $user_id])) {
             $_SESSION['full_name'] = $fullname;
+            $_SESSION['gender'] = $gender;
             $success_msg = "Cập nhật thông tin thành công!";
         }
     }
@@ -321,12 +325,30 @@ $orders = $stmtOrders->fetchAll();
                             <label>Họ và Tên</label>
                             <input type="text" name="fullname" value="<?= htmlspecialchars($user['full_name']) ?>" required>
                         </div>
+                        <div class="form-group">
+                            <label>Giới tính</label>
+                            <select name="gender" style="width: 100%; padding: 12px 20px; border: 1px solid var(--glass-border); border-radius: 10px; background: rgba(0,0,0,0.02); font-family: var(--font-body);">
+                                <option value="nam" <?= $user['gender'] == 'nam' ? 'selected' : '' ?>>Nam</option>
+                                <option value="nu" <?= $user['gender'] == 'nu' ? 'selected' : '' ?>>Nữ</option>
+                                <option value="khac" <?= $user['gender'] == 'khac' ? 'selected' : '' ?>>Khác</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="form-group" style="margin-bottom: 20px;">
-                        <label>Email (Không thể thay đổi)</label>
-                        <input type="email" value="<?= htmlspecialchars($user['email']) ?>" readonly style="background: rgba(0,0,0,0.05); cursor: not-allowed;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Số điện thoại</label>
+                            <input type="text" name="phone" value="<?= htmlspecialchars($user['phone'] ?? '') ?>" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email (Không thể thay đổi)</label>
+                            <input type="email" value="<?= htmlspecialchars($user['email']) ?>" readonly style="background: rgba(0,0,0,0.05); cursor: not-allowed;">
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-glow" style="padding: 12px 30px;">Cập Nhật Thông Tin</button>
+                    <div class="form-group" style="margin-bottom: 25px;">
+                        <label>Địa chỉ giao hàng</label>
+                        <input type="text" name="address" value="<?= htmlspecialchars($user['address'] ?? '') ?>" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-glow" style="padding: 12px 40px;"><i class="fa-solid fa-save"></i> Lưu Thay Đổi</button>
                 </form>
             </div>
 

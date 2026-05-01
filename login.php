@@ -16,8 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['role'] = $user['role'];
         $_SESSION['full_name'] = $user['full_name'];
-        // Ưu tiên giới tính vừa chọn để AI gợi ý ngay, nếu không lấy từ DB
-        $_SESSION['gender'] = $_POST['login_gender'] ?? $user['gender'];
+        $_SESSION['gender'] = $user['gender'];
 
         if ($user['role'] == 'admin') {
             header("Location: admin.php");
@@ -46,39 +45,78 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             align-items: center;
             width: 100vw;
             height: 100vh;
-            background: url('https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&q=80&w=2000') no-repeat center center/cover;
+            background: #0f0f12;
             position: relative;
-        }
-
-        .unified-login-container::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(8px);
+            overflow: hidden;
         }
 
         .login-card {
-            background: rgba(255, 255, 255, 0.95);
-            color: var(--text-main);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 50px;
-            border-radius: 30px;
+            border-radius: 35px;
             width: 90%;
             max-width: 450px;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.5);
             position: relative;
-            z-index: 1;
+            z-index: 10;
         }
 
         .login-header h2 {
             font-family: var(--font-heading);
-            font-size: 2.2rem;
-            background: var(--primary-gradient);
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .form-group i {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-group input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .form-group input:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #4facfe;
+            box-shadow: 0 0 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%) !important;
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.4) !important;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(79, 172, 254, 0.6) !important;
+        }
+
+        .orb {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 1;
+            animation: orbMove 20s infinite alternate;
+        }
+        @keyframes orbMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(100px, 100px); }
         }
     </style>
 </head>
@@ -87,6 +125,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <a href="index.php" class="back-home"><i class="fa-solid fa-arrow-left"></i></a>
 
     <div class="unified-login-container">
+        <!-- Animated Background -->
+        <div class="orb" style="background: rgba(79, 172, 254, 0.2); top: -200px; left: -100px;"></div>
+        <div class="orb" style="background: rgba(138, 43, 226, 0.2); bottom: -100px; right: -100px; animation-delay: -5s;"></div>
+        <div class="orb" style="background: rgba(255, 65, 108, 0.15); top: 50%; left: 50%; transform: translate(-50%, -50%); width: 800px; height: 800px; filter: blur(120px); animation: none;"></div>
+
         <div class="login-card">
             <div class="login-header">
                 <h2>Đăng Nhập</h2>
@@ -107,22 +150,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="password" name="password" placeholder="Mật khẩu" required>
                 </div>
                 
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 10px; font-size: 0.9rem; color: var(--text-muted);">Gợi ý AI theo phong cách:</label>
-                    <div style="display: flex; gap: 20px;">
-                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                            <input type="radio" name="login_gender" value="nam" checked> Nam
-                        </label>
-                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                            <input type="radio" name="login_gender" value="nu"> Nữ
-                        </label>
-                    </div>
-                </div>
-
-                <div style="display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 0.9rem;">
-                    <label style="color: var(--text-muted); cursor: pointer;"><input type="checkbox"> Ghi nhớ tôi</label>
-                    <a href="#" style="color: var(--accent-blue); text-decoration: none;">Quên mật khẩu?</a>
-                </div>
+                <p style="text-align: right; margin-top: -10px; margin-bottom: 25px;">
+                    <a href="#" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85rem;">Quên mật khẩu?</a>
+                </p>
 
                 <button type="submit" class="submit-btn" style="background: var(--primary-gradient); box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);">
                     Đăng Nhập Ngay <i class="fa-solid fa-arrow-right-to-bracket"></i>
