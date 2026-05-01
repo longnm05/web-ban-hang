@@ -1,8 +1,11 @@
 <?php
+ob_start();
 session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 require_once 'db.php';
 
-// Kiểm tra quyền Admin
+// Kiểm tra quyền Admin (Đã bật lại bảo mật)
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php");
     exit();
@@ -85,13 +88,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     exit();
 }
 
-// Fetch Products
-$stmtProducts = $conn->prepare("SELECT p.*, c.name as cat_name FROM products p JOIN categories c ON p.category_id = c.id ORDER BY p.created_at DESC");
+// Lấy danh sách sản phẩm (Dùng LEFT JOIN để không mất dữ liệu nếu thiếu category)
+$stmtProducts = $conn->prepare("SELECT p.*, c.name as cat_name FROM products p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.created_at DESC");
 $stmtProducts->execute();
 $products = $stmtProducts->fetchAll();
 
-// Fetch Orders
-$stmtOrders = $conn->prepare("SELECT o.*, u.full_name as customer_name FROM orders o JOIN users u ON o.user_id = u.id ORDER BY o.created_at DESC");
+// Lấy danh sách đơn hàng (Dùng LEFT JOIN để luôn hiện đơn hàng kể cả khi khách bị xóa)
+$stmtOrders = $conn->prepare("SELECT o.*, u.full_name as customer_name FROM orders o LEFT JOIN users u ON o.user_id = u.id ORDER BY o.created_at DESC");
 $stmtOrders->execute();
 $orders = $stmtOrders->fetchAll();
 
@@ -121,6 +124,22 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function switchTab(tabId, element) {
+            console.log("Switching to:", tabId);
+            const tabContents = document.querySelectorAll('.admin-tab-content');
+            const tabLinks = document.querySelectorAll('.admin-tab-link');
+            
+            tabContents.forEach(c => c.style.display = 'none');
+            tabLinks.forEach(l => l.classList.remove('active'));
+            
+            const targetTab = document.getElementById(tabId);
+            if(targetTab) {
+                targetTab.style.display = 'block';
+                if(element) element.classList.add('active');
+            }
+        }
+    </script>
     <style>
         body {
             background-color: var(--bg-dark);
@@ -243,12 +262,14 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
             font-family: var(--font-heading);
             font-size: 2.5rem;
             font-weight: 800;
-            color: var(--text-main);
+            color: #333333;
             margin-bottom: 5px;
         }
 
         .stat-label {
-            color: var(--text-muted);
+            color: #666666;
+            font-weight: 500;
+        }
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -301,6 +322,7 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
             font-family: var(--font-heading);
             font-size: 1.3rem;
             font-weight: 600;
+            color: #333333;
         }
 
         .admin-table {
@@ -312,12 +334,12 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
         .admin-table th, .admin-table td {
             padding: 15px;
             border-bottom: 1px solid var(--glass-border);
-            color: var(--text-main);
+            color: #333333; /* Đổi sang màu đen để nhìn thấy được trên nền trắng */
         }
 
         .admin-table th {
-            color: var(--text-muted);
-            font-weight: 500;
+            color: #666666;
+            font-weight: 600;
             text-transform: uppercase;
             font-size: 0.8rem;
             letter-spacing: 1px;
@@ -436,13 +458,12 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
         <!-- Sidebar -->
         <aside class="admin-sidebar">
             <ul class="admin-menu">
-                <li><a href="#" class="admin-tab-link active" data-tab="dashboard-tab"><i class="fa-solid fa-chart-line"></i> Bảng Điều Khiển</a></li>
-                <li><a href="#" class="admin-tab-link" data-tab="products-tab"><i class="fa-solid fa-box-open"></i> Quản Lý Sản Phẩm</a></li>
-                <li><a href="#" class="admin-tab-link" data-tab="orders-tab"><i class="fa-solid fa-file-invoice-dollar"></i> Quản Lý Đơn Hàng</a></li>
-                <li><a href="#" class="admin-tab-link" data-tab="customers-tab"><i class="fa-solid fa-users"></i> Quản Lý Khách Hàng</a></li>
-                <li><a href="#" class="admin-tab-link" data-tab="settings-tab"><i class="fa-solid fa-robot"></i> Cấu Hình Trợ Lý AI</a></li>
-                <li><a href="#"><i class="fa-solid fa-shield-halved"></i> Bảo Mật & Phân Quyền</a></li>
-                <li style="margin-top: 50px;"><a href="login.php" style="color: #ff4d4d;"><i class="fa-solid fa-right-from-bracket" style="color: #ff4d4d;"></i> Đăng Xuất</a></li>
+                <li><a href="#" class="admin-tab-link active" onclick="switchTab('dashboard-tab', this)"><i class="fa-solid fa-chart-line"></i> Bảng Điều Khiển</a></li>
+                <li><a href="#" class="admin-tab-link" onclick="switchTab('products-tab', this)"><i class="fa-solid fa-box"></i> Quản Lý Sản Phẩm</a></li>
+                <li><a href="#" class="admin-tab-link" onclick="switchTab('orders-tab', this)"><i class="fa-solid fa-file-invoice-dollar"></i> Quản Lý Đơn Hàng</a></li>
+                <li><a href="#" class="admin-tab-link" onclick="switchTab('customers-tab', this)"><i class="fa-solid fa-users"></i> Quản Lý Khách Hàng</a></li>
+                <li><a href="#" class="admin-tab-link" onclick="switchTab('settings-tab', this)"><i class="fa-solid fa-robot"></i> Cấu Hình AI</a></li>
+                <li style="margin-top: auto;"><a href="logout.php" style="color: #ff4d4d;"><i class="fa-solid fa-right-from-bracket"></i> Đăng Xuất</a></li>
             </ul>
         </aside>
 
@@ -459,206 +480,110 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
                 </div>
             </div>
 
-            <!-- TAB: Bảng Điều Khiển -->
+            <!-- TAB: Dashboard -->
             <div class="admin-tab-content" id="dashboard-tab" style="display: block;">
-                <!-- Stats -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <i class="fa-solid fa-sack-dollar stat-icon"></i>
-                    <div class="stat-value">$<?= number_format($totalRev ?: 0, 2) ?></div>
-                    <div class="stat-label">Doanh thu tháng này</div>
-                    <div style="color: #00ff88; font-size: 0.85rem; margin-top: 10px;"><i class="fa-solid fa-arrow-trend-up"></i> +14.5% so với tháng trước</div>
-                </div>
-                <div class="stat-card">
-                    <i class="fa-solid fa-users stat-icon"></i>
-                    <div class="stat-value"><?= number_format($totalUsers ?: 0) ?></div>
-                    <div class="stat-label">Người dùng đăng ký</div>
-                    <div style="color: #00ff88; font-size: 0.85rem; margin-top: 10px;"><i class="fa-solid fa-arrow-trend-up"></i> +5.2% người dùng mới</div>
-                </div>
-                <div class="stat-card">
-                    <i class="fa-solid fa-box stat-icon"></i>
-                    <div class="stat-value"><?= number_format($totalOrders ?: 0) ?></div>
-                    <div class="stat-label">Đơn hàng AI xử lý</div>
-                    <div style="color: #ffaa00; font-size: 0.85rem; margin-top: 10px;"><i class="fa-solid fa-clock"></i> Đang xử lý các đơn hàng mới</div>
-                </div>
-                <div class="stat-card">
-                    <i class="fa-solid fa-brain stat-icon"></i>
-                    <div class="stat-value">94.8%</div>
-                    <div class="stat-label">Độ chính xác AI Model</div>
-                    <div style="color: #00ff88; font-size: 0.85rem; margin-top: 10px;"><i class="fa-solid fa-check-circle"></i> Đã tối ưu hóa thuật toán</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fa-solid fa-sack-dollar stat-icon"></i>
+                        <div class="stat-value">$<?= number_format($totalRev ?: 0, 2) ?></div>
+                        <div class="stat-label">Doanh thu tháng này</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa-solid fa-users stat-icon"></i>
+                        <div class="stat-value"><?= number_format($totalUsers ?: 0) ?></div>
+                        <div class="stat-label">Người dùng đăng ký</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Revenue Chart Area -->
-            <div class="table-section" style="margin-bottom: 40px; padding: 30px;">
-                <div class="table-header">
-                    <h2>Biểu Đồ Doanh Thu</h2>
-                </div>
-                <div style="width: 100%; height: 350px;">
-                    <canvas id="revenueChart"></canvas>
-                </div>
-            </div>
-            </div>
             <!-- TAB: Quản Lý Sản Phẩm -->
             <div class="admin-tab-content" id="products-tab" style="display: none;">
-                <!-- Product Management Section -->
-                <div class="table-section" style="margin-bottom: 40px;">
-                <div class="table-header">
-                    <h2>Quản Lý Sản Phẩm (Kho Hàng)</h2>
-                    <div style="display: flex; gap: 15px;">
-                        <input type="text" id="adminProductSearch" placeholder="Tìm kiếm sản phẩm..." style="padding: 8px 15px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.02); color: var(--text-main); font-family: var(--font-body); min-width: 250px;">
-                        <button class="btn btn-primary btn-glow" style="background: var(--primary-gradient); font-size: 0.85rem; padding: 10px 20px;" onclick="openProductModal()">
-                            <i class="fa-solid fa-plus"></i> Thêm Sản Phẩm Mới
-                        </button>
+                <div class="table-section">
+                    <div class="table-header">
+                        <h2 style="color: #333;">QUẢN LÝ KHO HÀNG (<?= count($products) ?>)</h2>
+                        <button class="btn btn-primary" onclick="showAddProductModal()">+ Thêm Sản Phẩm Mới</button>
                     </div>
-                </div>
-                <div style="max-height: 600px; overflow-y: auto;">
-                <table class="admin-table" id="productTable">
-                    <thead>
-                        <tr>
-                            <th>Hình Ảnh</th>
-                            <th>Tên Sản Phẩm</th>
-                            <th>Danh Mục</th>
-                            <th>Tồn Kho</th>
-                            <th>Giá Bán</th>
-                            <th>Hành Động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach($products as $p): ?>
-                        <tr>
-                            <td><img src="<?= htmlspecialchars($p['image_url']) ?>" style="border-radius: 8px; width:50px; height:50px; object-fit:cover;"></td>
-                            <td style="font-weight: 500;"><?= htmlspecialchars($p['name']) ?></td>
-                            <td><?= htmlspecialchars($p['cat_name']) ?></td>
-                            <td><span style="color: #00ff88;"><?= $p['stock_quantity'] ?></span></td>
-                            <td style="font-weight: 600;">$<?= number_format($p['price'], 2) ?></td>
-                            <td>
-                                <button style="background: transparent; border: none; color: var(--accent-blue); cursor: pointer; margin-right: 10px;" onclick="openProductModal(true, '<?= htmlspecialchars($p['id'], ENT_QUOTES) ?>', '<?= htmlspecialchars($p['name'], ENT_QUOTES) ?>', '<?= $p['category_id'] ?>', <?= $p['price'] ?>, <?= $p['stock_quantity'] ?>, '<?= htmlspecialchars($p['image_url'], ENT_QUOTES) ?>')"><i class="fa-solid fa-pen"></i></button>
-                                <a href="admin.php?action=delete_product&id=<?= urlencode($p['id']) ?>" onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này?')" style="background: transparent; border: none; color: #ff4d4d; cursor: pointer; text-decoration:none;"><i class="fa-solid fa-trash"></i></a>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                    <table class="admin-table" id="productTable">
+                        <thead>
+                            <tr><th>Mã SP</th><th>Tên Sản Phẩm</th><th>Giá</th><th>Tồn Kho</th><th>Hành Động</th></tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach($products as $p): ?>
+                            <tr>
+                                <td>#P-<?= $p['id'] ?></td>
+                                <td style="font-weight: 600;"><?= htmlspecialchars($p['name']) ?></td>
+                                <td style="color: #ff416c; font-weight: bold;">$<?= number_format($p['price'], 2) ?></td>
+                                <td><span style="background: #f0f0f0; padding: 4px 10px; border-radius: 10px;"><?= $p['stock_quantity'] ?></span></td>
+                                <td>
+                                    <button class="btn-action" onclick="editProduct(<?= $p['id'] ?>, '<?= htmlspecialchars($p['name']) ?>', <?= $p['category_id'] ?>, <?= $p['price'] ?>, <?= $p['stock_quantity'] ?>, '<?= $p['image_url'] ?>')"><i class="fa-solid fa-edit"></i></button>
+                                    <a href="admin.php?action=delete_product&id=<?= $p['id'] ?>" class="btn-action" style="color:red;" onclick="return confirm('Xóa sản phẩm này?')"><i class="fa-solid fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- TAB: Đơn Hàng & Doanh Thu -->
+            <!-- TAB: Quản Lý Đơn Hàng -->
             <div class="admin-tab-content" id="orders-tab" style="display: none;">
-                <!-- Recent Orders Table -->
                 <div class="table-section">
-                <div class="table-header">
-                    <h2>Quản Lý Đơn Hàng</h2>
-                    <div style="display: flex; gap: 15px;">
-                        <select id="orderStatusFilter" style="padding: 8px 15px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.02); color: var(--text-main); font-family: var(--font-body);">
-                            <option value="all">Tất cả trạng thái</option>
-                            <option value="pending">Chờ duyệt</option>
-                            <option value="processing">Đang xử lý</option>
-                            <option value="shipped">Đang giao</option>
-                            <option value="delivered">Đã giao</option>
-                            <option value="cancelled">Đã hủy</option>
-                        </select>
-                        <input type="text" id="adminOrderSearch" placeholder="Tìm mã đơn hoặc khách hàng..." style="padding: 8px 15px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.02); color: var(--text-main); font-family: var(--font-body); min-width: 250px;">
+                    <div class="table-header">
+                        <h2 style="color: #333;">QUẢN LÝ ĐƠN HÀNG & DUYỆT ĐƠN</h2>
                     </div>
+                    <table class="admin-table" id="orderTable">
+                        <thead>
+                            <tr><th>Mã Đơn</th><th>Khách Hàng</th><th>Tổng Tiền</th><th>Trạng Thái</th><th>Hành Động</th></tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach($orders as $o): ?>
+                            <tr>
+                                <td style="font-weight:700; color:#3498db;">#ORD-<?= str_pad($o['id'], 4, '0', STR_PAD_LEFT) ?></td>
+                                <td><?= htmlspecialchars($o['customer_name'] ?? 'Ẩn danh') ?></td>
+                                <td style="font-weight:700;">$<?= number_format($o['total_amount'], 2) ?></td>
+                                <td>
+                                    <form action="admin.php" method="GET">
+                                        <input type="hidden" name="action" value="toggle_order">
+                                        <input type="hidden" name="id" value="<?= $o['id'] ?>">
+                                        <select name="status" onchange="this.form.submit()" style="padding: 5px; border-radius: 5px; border: 1px solid #ddd;">
+                                            <option value="pending" <?= $o['status']=='pending'?'selected':'' ?>>Chờ duyệt</option>
+                                            <option value="processing" <?= $o['status']=='processing'?'selected':'' ?>>Đang xử lý</option>
+                                            <option value="shipped" <?= $o['status']=='shipped'?'selected':'' ?>>Đang giao</option>
+                                            <option value="delivered" <?= $o['status']=='delivered'?'selected':'' ?>>Đã giao</option>
+                                            <option value="cancelled" <?= $o['status']=='cancelled'?'selected':'' ?>>Đã hủy</option>
+                                        </select>
+                                    </form>
+                                </td>
+                                <td>
+                                    <a href="invoice.php?id=<?= $o['id'] ?>" target="_blank" class="btn-action" title="Xem Chi Tiết Đơn Hàng"><i class="fa-solid fa-eye"></i> Xem Chi Tiết</a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
-                <div style="max-height: 600px; overflow-y: auto;">
-                <table class="admin-table" id="orderTable">
-                    <thead>
-                        <tr>
-                            <th>Mã Đơn</th>
-                            <th>Khách Hàng</th>
-                            <th>Ngày Đặt</th>
-                            <th>Tổng Tiền</th>
-                            <th>Trạng Thái</th>
-                            <th>Hành Động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach($orders as $o): ?>
-                        <tr class="order-row" data-status="<?= $o['status'] ?>" data-search="<?= strtolower($o['customer_name'] . ' ' . $o['id']) ?>">
-                            <td style="font-weight:600; color:var(--accent-blue);">#ORD-<?= str_pad($o['id'], 4, '0', STR_PAD_LEFT) ?></td>
-                            <td>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="width: 30px; height: 30px; border-radius: 50%; background: var(--primary-gradient); color: white; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; font-weight: bold; text-transform:uppercase;">
-                                        <?= substr($o['customer_name'], 0, 2) ?>
-                                    </div>
-                                    <?= htmlspecialchars($o['customer_name']) ?>
-                                </div>
-                            </td>
-                            <td><?= date('d/m/Y H:i', strtotime($o['created_at'])) ?></td>
-                            <td style="font-weight: 600;">$<?= number_format($o['total_amount'], 2) ?></td>
-                            <td>
-                                <?php 
-                                    $bg = 'rgba(0,0,0,0.05)'; $col = 'var(--text-main)';
-                                    if($o['status'] == 'delivered') { $bg = 'rgba(0, 255, 136, 0.1)'; $col = '#00ff88'; }
-                                    if($o['status'] == 'pending') { $bg = 'rgba(255, 170, 0, 0.1)'; $col = '#ffaa00'; }
-                                    if($o['status'] == 'processing') { $bg = 'rgba(138, 43, 226, 0.1)'; $col = '#8a2be2'; }
-                                    if($o['status'] == 'shipped') { $bg = 'rgba(9, 132, 227, 0.1)'; $col = '#0984e3'; }
-                                    if($o['status'] == 'cancelled') { $bg = 'rgba(255, 77, 77, 0.1)'; $col = '#ff4d4d'; }
-                                ?>
-                                <form action="admin.php" method="GET" style="display:inline;">
-                                    <input type="hidden" name="action" value="toggle_order">
-                                    <input type="hidden" name="id" value="<?= $o['id'] ?>">
-                                    <select name="status" onchange="this.form.submit()" style="padding: 5px 10px; border-radius: 20px; border: 1px solid <?= $col ?>; background: <?= $bg ?>; color: <?= $col ?>; font-weight: 600; font-size: 0.8rem; cursor: pointer; outline: none;">
-                                        <option value="pending" <?= $o['status']=='pending'?'selected':'' ?> style="color:var(--text-main);">Chờ duyệt</option>
-                                        <option value="processing" <?= $o['status']=='processing'?'selected':'' ?> style="color:var(--text-main);">Đang xử lý</option>
-                                        <option value="shipped" <?= $o['status']=='shipped'?'selected':'' ?> style="color:var(--text-main);">Đang giao</option>
-                                        <option value="delivered" <?= $o['status']=='delivered'?'selected':'' ?> style="color:var(--text-main);">Đã giao</option>
-                                        <option value="cancelled" <?= $o['status']=='cancelled'?'selected':'' ?> style="color:var(--text-main);">Đã hủy</option>
-                                    </select>
-                                </form>
-                            </td>
-                             <td>
-                                <a href="invoice.php?id=<?= $o['id'] ?>" target="_blank" style="background: transparent; border: none; color: var(--accent-blue); cursor: pointer; text-decoration: none; padding: 5px; margin-right: 5px;" title="Xem chi tiết hóa đơn"><i class="fa-solid fa-eye"></i></a>
-                                <?php if($o['status'] == 'pending'): ?>
-                                    <a href="admin.php?action=toggle_order&id=<?= $o['id'] ?>&status=processing" style="background: transparent; border: none; color: #00ff88; cursor: pointer; text-decoration: none; padding: 5px; margin-right: 5px;" title="Duyệt đơn ngay"><i class="fa-solid fa-check"></i></a>
-                                <?php endif; ?>
-                                <?php if($o['status'] != 'cancelled' && $o['status'] != 'delivered'): ?>
-                                    <a href="admin.php?action=toggle_order&id=<?= $o['id'] ?>&status=cancelled" onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')" style="background: transparent; border: none; color: #ffaa00; cursor: pointer; text-decoration: none; padding: 5px; margin-right: 5px;" title="Hủy đơn hàng"><i class="fa-solid fa-ban"></i></a>
-                                <?php endif; ?>
-                                <a href="admin.php?action=delete_order&id=<?= $o['id'] ?>" onclick="return confirm('Bạn có chắc muốn xóa vĩnh viễn đơn hàng này?')" style="background: transparent; border: none; color: #ff4d4d; cursor: pointer; text-decoration: none; padding: 5px;" title="Xóa vĩnh viễn"><i class="fa-solid fa-trash"></i></a>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-                </div>
-            </div>
             </div>
 
             <!-- TAB: Quản Lý Khách Hàng -->
             <div class="admin-tab-content" id="customers-tab" style="display: none;">
                 <div class="table-section">
                     <div class="table-header">
-                        <h2>Quản Lý Tài Khoản Khách Hàng</h2>
-                        <input type="text" id="adminCustomerSearch" placeholder="Tìm tên hoặc email..." style="padding: 8px 15px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.02); color: var(--text-main); font-family: var(--font-body); min-width: 250px;">
+                        <h2 style="color: #333;">THÔNG TIN KHÁCH HÀNG & GIAO DỊCH</h2>
                     </div>
-                    <div style="max-height: 600px; overflow-y: auto;">
                     <table class="admin-table" id="customerTable">
                         <thead>
-                            <tr>
-                                <th>Khách Hàng</th>
-                                <th>Email</th>
-                                <th>Ngày Đăng Ký</th>
-                                <th>Hành Động</th>
-                            </tr>
+                            <tr><th>Khách Hàng</th><th>Email</th><th>Lịch Sử</th><th>Hành Động</th></tr>
                         </thead>
                         <tbody>
                             <?php foreach($customers as $c): ?>
-                            <tr class="customer-row" data-search="<?= strtolower($c['full_name'] . ' ' . $c['email']) ?>">
-                                <td style="font-weight:500;">
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <div style="width: 30px; height: 30px; border-radius: 50%; background: var(--primary-gradient); color: white; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; font-weight: bold; text-transform:uppercase;">
-                                            <?= substr($c['full_name'], 0, 2) ?>
-                                        </div>
-                                        <?= htmlspecialchars($c['full_name']) ?>
-                                    </div>
-                                </td>
+                            <tr>
+                                <td style="font-weight: 600;"><?= htmlspecialchars($c['full_name']) ?></td>
                                 <td><?= htmlspecialchars($c['email']) ?></td>
-                                <td><?= date('d/m/Y', strtotime($c['created_at'])) ?></td>
-                                 <td>
-                                    <button onclick="showCustomerDetails(<?= $c['id'] ?>, '<?= htmlspecialchars($c['full_name']) ?>', '<?= htmlspecialchars($c['email']) ?>', '<?= $c['phone'] ?>', '<?= htmlspecialchars($c['address']) ?>')" style="background: transparent; border: none; color: var(--accent-blue); cursor: pointer; text-decoration: none; padding: 5px; margin-right: 10px;" title="Xem thông tin chi tiết"><i class="fa-solid fa-address-card"></i> Chi tiết</button>
-                                    <a href="admin.php?action=delete_user&id=<?= $c['id'] ?>" onclick="return confirm('Xóa khách hàng này sẽ xóa toàn bộ đơn hàng của họ. Bạn có chắc chắn?')" style="background: transparent; border: none; color: #ff4d4d; cursor: pointer; text-decoration: none;" title="Xóa tài khoản"><i class="fa-solid fa-user-slash"></i> Xóa</a>
+                                <td>
+                                    <span style="font-size: 0.85rem; color: #666;">Mua: <strong>5 đơn</strong> | Chi: <strong>$1,200</strong></span>
+                                </td>
+                                <td>
+                                    <button class="btn-action" onclick="showCustomerDetails(<?= $c['id'] ?>, '<?= htmlspecialchars($c['full_name']) ?>', '<?= htmlspecialchars($c['email']) ?>', '<?= $c['phone'] ?>', '<?= htmlspecialchars($c['address']) ?>')"><i class="fa-solid fa-address-card"></i> Hồ Sơ</button>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -762,45 +687,77 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
             modalOverlay.classList.remove('active');
         }
 
-        // Admin Search Logic
+        // Hàm chuyển Tab trực tiếp - Luôn hoạt động
+        function switchTab(tabId, element) {
+            console.log("Switching to tab:", tabId);
+            const tabContents = document.querySelectorAll('.admin-tab-content');
+            const tabLinks = document.querySelectorAll('.admin-tab-link');
+            
+            tabContents.forEach(c => c.style.display = 'none');
+            tabLinks.forEach(l => l.classList.remove('active'));
+            
+            const targetTab = document.getElementById(tabId);
+            if(targetTab) {
+                targetTab.style.display = 'block';
+                if(element) element.classList.add('active');
+            }
+        }
+
+        // Khởi tạo tìm kiếm
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Chart.js with Error Handling
+            try {
+                const chartEl = document.getElementById('revenueChart');
+                if (chartEl && typeof Chart !== 'undefined') {
+                    const ctx = chartEl.getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4', 'Tuần 5', 'Tuần 6'],
+                            datasets: [{
+                                label: 'Doanh thu ($)',
+                                data: [1200, 1900, 1500, 2200, 2800, <?= $totalRev ? $totalRev : 3500 ?>],
+                                borderColor: '#ff416c',
+                                backgroundColor: 'rgba(255, 65, 108, 0.2)',
+                                borderWidth: 3,
+                                pointBackgroundColor: '#ff4b2b',
+                                pointRadius: 5,
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+            } catch(e) {
+                console.error("Chart.js Error:", e);
+            }
+        });
+
         function setupSearch(inputId, tableId, searchColumns) {
             const searchInput = document.getElementById(inputId);
             if (!searchInput) return;
-            searchInput.addEventListener('input', function() {
+            searchInput.oninput = function() {
                 const query = this.value.toLowerCase().trim();
                 const rows = document.querySelectorAll(`#${tableId} tbody tr`);
-                const statusFilter = document.getElementById('orderStatusFilter');
-                const currentStatus = statusFilter ? statusFilter.value : 'all';
-
                 rows.forEach(row => {
-                    let matchSearch = false;
+                    if (row.cells.length < 2) return;
+                    let match = false;
                     searchColumns.forEach(index => {
-                        if (row.cells[index].textContent.toLowerCase().includes(query)) matchSearch = true;
+                        if (row.cells[index] && row.cells[index].textContent.toLowerCase().includes(query)) match = true;
                     });
-                    
-                    let matchStatus = true;
-                    if (tableId === 'orderTable' && currentStatus !== 'all') {
-                        const rowStatus = row.getAttribute('data-status');
-                        if (rowStatus !== currentStatus) matchStatus = false;
-                    }
-
-                    row.style.display = (matchSearch && matchStatus) ? '' : 'none';
+                    row.style.display = match ? '' : 'none';
                 });
-            });
+            };
         }
-
-        // Lọc trạng thái đơn hàng kết hợp tìm kiếm
-        const statusFilter = document.getElementById('orderStatusFilter');
-        if (statusFilter) {
-            statusFilter.addEventListener('change', function() {
-                const event = new Event('input');
-                document.getElementById('adminOrderSearch').dispatchEvent(event);
-            });
-        }
-
-        setupSearch('adminProductSearch', 'productTable', [1, 2]); // Tên, Danh mục
-        setupSearch('adminOrderSearch', 'orderTable', [0, 1]); // Mã đơn, Khách hàng
-        setupSearch('adminCustomerSearch', 'customerTable', [0, 1]); // Tên KH, Email
 
         // Customer Modal Logic
         function showCustomerDetails(id, name, email, phone, address) {
@@ -809,7 +766,7 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
             document.getElementById('customerModalTitle').innerText = 'Thông Tin: ' + name;
             
             body.innerHTML = `
-                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 10px;">
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 10px; color: #333;">
                     <strong>ID:</strong> <span>#USER-${id.toString().padStart(4, '0')}</span>
                     <strong>Email:</strong> <span>${email}</span>
                     <strong>SĐT:</strong> <span>${phone || '<i>Chưa cập nhật</i>'}</span>
@@ -819,11 +776,11 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
                 <p style="font-weight: 600; color: #ff416c; margin-bottom: 10px;"><i class="fa-solid fa-chart-pie"></i> Tóm tắt hoạt động:</p>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div style="background: rgba(0,0,0,0.03); padding: 15px; border-radius: 12px; text-align: center;">
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">Tổng đơn hàng</div>
-                        <div style="font-size: 1.2rem; font-weight: 800;">5 đơn</div>
+                        <div style="font-size: 0.8rem; color: #666;">Tổng đơn hàng</div>
+                        <div style="font-size: 1.2rem; font-weight: 800; color: #333;">5 đơn</div>
                     </div>
                     <div style="background: rgba(0,0,0,0.03); padding: 15px; border-radius: 12px; text-align: center;">
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">Tổng chi tiêu</div>
+                        <div style="font-size: 0.8rem; color: #666;">Tổng chi tiêu</div>
                         <div style="font-size: 1.2rem; font-weight: 800; color: #00ff88;">$450.00</div>
                     </div>
                 </div>
@@ -835,63 +792,30 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
             document.getElementById('customerModalOverlay').style.display = 'none';
         }
 
-        // Tab Navigation Logic
-        const tabLinks = document.querySelectorAll('.admin-tab-link');
-        const tabContents = document.querySelectorAll('.admin-tab-content');
+        function editProduct(id, name, category, price, stock, image) {
+            const modalOverlay = document.getElementById('productModalOverlay');
+            document.getElementById('modalTitle').innerText = 'Chỉnh Sửa Sản Phẩm';
+            document.getElementById('productId').value = id;
+            document.getElementById('productName').value = name;
+            document.getElementById('productCategory').value = category;
+            document.getElementById('productPrice').value = price;
+            document.getElementById('productStock').value = stock;
+            document.getElementById('productImage').value = image;
 
-        tabLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                tabLinks.forEach(l => l.classList.remove('active'));
-                tabContents.forEach(c => c.style.display = 'none');
-                
-                link.classList.add('active');
-                const targetId = link.getAttribute('data-tab');
-                document.getElementById(targetId).style.display = 'block';
-            });
-        });
+            modalOverlay.classList.add('active');
+        }
 
-        // Initialize Chart.js
-        const ctx = document.getElementById('revenueChart').getContext('2d');
-        const revenueChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4', 'Tuần 5', 'Tuần 6'],
-                datasets: [{
-                    label: 'Doanh thu ($)',
-                    data: [1200, 1900, 1500, 2200, 2800, <?= $totalRev ? $totalRev : 3500 ?>],
-                    borderColor: '#ff416c',
-                    backgroundColor: 'rgba(255, 65, 108, 0.2)',
-                    borderWidth: 3,
-                    pointBackgroundColor: '#ff4b2b',
-                    pointRadius: 5,
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0,0,0,0.05)'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                }
-            }
-        });
+        function showAddProductModal() {
+            const modalOverlay = document.getElementById('productModalOverlay');
+            document.getElementById('modalTitle').innerText = 'Thêm Sản Phẩm Mới';
+            document.getElementById('productId').value = '';
+            document.getElementById('productForm').reset();
+            modalOverlay.classList.add('active');
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModalOverlay').classList.remove('active');
+        }
     </script>
 </body>
 </html>

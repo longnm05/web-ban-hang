@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once 'db.php';
 
 // Lấy 4 sản phẩm ngẫu nhiên hoặc mới nhất cho phần AI Curated

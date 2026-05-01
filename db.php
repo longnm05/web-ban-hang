@@ -1,6 +1,6 @@
 <?php
 $host = '127.0.0.1';
-$dbname = 'novastyle_db';
+$dbname = 'aistore_db';
 $username = 'root';
 $password = '';
 
