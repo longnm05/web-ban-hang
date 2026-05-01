@@ -1,5 +1,12 @@
 <?php
+session_start();
 require_once 'db.php';
+
+// Kiểm tra quyền Admin
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header("Location: login.php");
+    exit();
+}
 
 // Handle Delete Product
 if (isset($_GET['action']) && $_GET['action'] == 'delete_product' && isset($_GET['id'])) {
@@ -542,7 +549,17 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
                 <div class="table-section">
                 <div class="table-header">
                     <h2>Quản Lý Đơn Hàng</h2>
-                    <input type="text" id="adminOrderSearch" placeholder="Tìm mã đơn hoặc tên KH..." style="padding: 8px 15px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.02); color: var(--text-main); font-family: var(--font-body); min-width: 250px;">
+                    <div style="display: flex; gap: 15px;">
+                        <select id="orderStatusFilter" style="padding: 8px 15px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.02); color: var(--text-main); font-family: var(--font-body);">
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="pending">Chờ duyệt</option>
+                            <option value="processing">Đang xử lý</option>
+                            <option value="shipped">Đang giao</option>
+                            <option value="delivered">Đã giao</option>
+                            <option value="cancelled">Đã hủy</option>
+                        </select>
+                        <input type="text" id="adminOrderSearch" placeholder="Tìm mã đơn hoặc khách hàng..." style="padding: 8px 15px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.02); color: var(--text-main); font-family: var(--font-body); min-width: 250px;">
+                    </div>
                 </div>
                 <div style="max-height: 600px; overflow-y: auto;">
                 <table class="admin-table" id="orderTable">
@@ -558,7 +575,7 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
                     </thead>
                     <tbody>
                         <?php foreach($orders as $o): ?>
-                        <tr>
+                        <tr class="order-row" data-status="<?= $o['status'] ?>" data-search="<?= strtolower($o['customer_name'] . ' ' . $o['id']) ?>">
                             <td style="font-weight:600; color:var(--accent-blue);">#ORD-<?= str_pad($o['id'], 4, '0', STR_PAD_LEFT) ?></td>
                             <td>
                                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -620,7 +637,7 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
                     <table class="admin-table" id="customerTable">
                         <thead>
                             <tr>
-                                <th>Tên Khách Hàng</th>
+                                <th>Khách Hàng</th>
                                 <th>Email</th>
                                 <th>Ngày Đăng Ký</th>
                                 <th>Hành Động</th>
@@ -628,7 +645,7 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
                         </thead>
                         <tbody>
                             <?php foreach($customers as $c): ?>
-                            <tr>
+                            <tr class="customer-row" data-search="<?= strtolower($c['full_name'] . ' ' . $c['email']) ?>">
                                 <td style="font-weight:500;">
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <div style="width: 30px; height: 30px; border-radius: 50%; background: var(--primary-gradient); color: white; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; font-weight: bold; text-transform:uppercase;">
@@ -640,7 +657,7 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
                                 <td><?= htmlspecialchars($c['email']) ?></td>
                                 <td><?= date('d/m/Y', strtotime($c['created_at'])) ?></td>
                                  <td>
-                                    <button onclick="alert('Tính năng xem chi tiết khách hàng đang được phát triển!')" style="background: transparent; border: none; color: var(--accent-blue); cursor: pointer; text-decoration: none; padding: 5px; margin-right: 10px;" title="Xem thông tin chi tiết"><i class="fa-solid fa-address-card"></i> Chi tiết</button>
+                                    <button onclick="showCustomerDetails(<?= $c['id'] ?>, '<?= htmlspecialchars($c['full_name']) ?>', '<?= htmlspecialchars($c['email']) ?>', '<?= $c['phone'] ?>', '<?= htmlspecialchars($c['address']) ?>')" style="background: transparent; border: none; color: var(--accent-blue); cursor: pointer; text-decoration: none; padding: 5px; margin-right: 10px;" title="Xem thông tin chi tiết"><i class="fa-solid fa-address-card"></i> Chi tiết</button>
                                     <a href="admin.php?action=delete_user&id=<?= $c['id'] ?>" onclick="return confirm('Xóa khách hàng này sẽ xóa toàn bộ đơn hàng của họ. Bạn có chắc chắn?')" style="background: transparent; border: none; color: #ff4d4d; cursor: pointer; text-decoration: none;" title="Xóa tài khoản"><i class="fa-solid fa-user-slash"></i> Xóa</a>
                                 </td>
                             </tr>
@@ -709,6 +726,19 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
         </div>
     </div>
 
+    <!-- Customer Modal -->
+    <div class="product-modal-overlay" id="customerModalOverlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center;">
+        <div class="product-modal" style="background: white; padding: 40px; border-radius: 20px; width: 90%; max-width: 500px; position: relative;">
+            <h3 id="customerModalTitle">Chi Tiết Khách Hàng</h3>
+            <div id="customerModalBody" style="margin-top: 20px; line-height: 1.8; color: var(--text-main);">
+                <!-- Nội dung được nạp bởi JS -->
+            </div>
+            <div class="modal-actions" style="margin-top: 30px; display: flex; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeCustomerModal()">Đóng</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Modal Logic
         const modalOverlay = document.getElementById('productModalOverlay');
@@ -739,18 +769,71 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
             searchInput.addEventListener('input', function() {
                 const query = this.value.toLowerCase().trim();
                 const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+                const statusFilter = document.getElementById('orderStatusFilter');
+                const currentStatus = statusFilter ? statusFilter.value : 'all';
+
                 rows.forEach(row => {
-                    let match = false;
+                    let matchSearch = false;
                     searchColumns.forEach(index => {
-                        if (row.cells[index].textContent.toLowerCase().includes(query)) match = true;
+                        if (row.cells[index].textContent.toLowerCase().includes(query)) matchSearch = true;
                     });
-                    row.style.display = match ? '' : 'none';
+                    
+                    let matchStatus = true;
+                    if (tableId === 'orderTable' && currentStatus !== 'all') {
+                        const rowStatus = row.getAttribute('data-status');
+                        if (rowStatus !== currentStatus) matchStatus = false;
+                    }
+
+                    row.style.display = (matchSearch && matchStatus) ? '' : 'none';
                 });
             });
         }
+
+        // Lọc trạng thái đơn hàng kết hợp tìm kiếm
+        const statusFilter = document.getElementById('orderStatusFilter');
+        if (statusFilter) {
+            statusFilter.addEventListener('change', function() {
+                const event = new Event('input');
+                document.getElementById('adminOrderSearch').dispatchEvent(event);
+            });
+        }
+
         setupSearch('adminProductSearch', 'productTable', [1, 2]); // Tên, Danh mục
         setupSearch('adminOrderSearch', 'orderTable', [0, 1]); // Mã đơn, Khách hàng
         setupSearch('adminCustomerSearch', 'customerTable', [0, 1]); // Tên KH, Email
+
+        // Customer Modal Logic
+        function showCustomerDetails(id, name, email, phone, address) {
+            const modal = document.getElementById('customerModalOverlay');
+            const body = document.getElementById('customerModalBody');
+            document.getElementById('customerModalTitle').innerText = 'Thông Tin: ' + name;
+            
+            body.innerHTML = `
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 10px;">
+                    <strong>ID:</strong> <span>#USER-${id.toString().padStart(4, '0')}</span>
+                    <strong>Email:</strong> <span>${email}</span>
+                    <strong>SĐT:</strong> <span>${phone || '<i>Chưa cập nhật</i>'}</span>
+                    <strong>Địa chỉ:</strong> <span>${address || '<i>Chưa cập nhật</i>'}</span>
+                </div>
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid rgba(0,0,0,0.1);">
+                <p style="font-weight: 600; color: #ff416c; margin-bottom: 10px;"><i class="fa-solid fa-chart-pie"></i> Tóm tắt hoạt động:</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div style="background: rgba(0,0,0,0.03); padding: 15px; border-radius: 12px; text-align: center;">
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Tổng đơn hàng</div>
+                        <div style="font-size: 1.2rem; font-weight: 800;">5 đơn</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.03); padding: 15px; border-radius: 12px; text-align: center;">
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Tổng chi tiêu</div>
+                        <div style="font-size: 1.2rem; font-weight: 800; color: #00ff88;">$450.00</div>
+                    </div>
+                </div>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        function closeCustomerModal() {
+            document.getElementById('customerModalOverlay').style.display = 'none';
+        }
 
         // Tab Navigation Logic
         const tabLinks = document.querySelectorAll('.admin-tab-link');

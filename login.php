@@ -5,6 +5,7 @@ require_once 'db.php';
 $error = '';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
+    $password = $_POST['password'];
     // For demo purpose, we skip actual password hashing verification since demo data has fake hashes
     // In production: password_verify($password, $user['password_hash'])
 
@@ -12,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->execute([$email]);
     $user = $stmt->fetch();
 
-    if ($user) {
+    if ($user && ($user['password_hash'] === 'hashed_' . $password || $user['password_hash'] === $password)) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['role'] = $user['role'];
         $_SESSION['full_name'] = $user['full_name'];
@@ -25,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         exit();
     } else {
-        $error = "Thông tin đăng nhập không chính xác!";
+        $error = "Email hoặc Mật khẩu không chính xác!";
     }
 }
 ?>
