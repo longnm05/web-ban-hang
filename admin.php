@@ -592,8 +592,14 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
                                 </form>
                             </td>
                              <td>
-                                <a href="invoice.php?id=<?= $o['id'] ?>" target="_blank" style="background: transparent; border: none; color: var(--accent-blue); cursor: pointer; text-decoration: none; padding: 5px; margin-right: 5px;" title="Xem chi tiết"><i class="fa-solid fa-eye"></i></a>
-                                <a href="admin.php?action=delete_order&id=<?= $o['id'] ?>" onclick="return confirm('Bạn có chắc muốn xóa đơn hàng này?')" style="background: transparent; border: none; color: #ff4d4d; cursor: pointer; text-decoration: none; padding: 5px;" title="Xóa đơn hàng"><i class="fa-solid fa-trash"></i></a>
+                                <a href="invoice.php?id=<?= $o['id'] ?>" target="_blank" style="background: transparent; border: none; color: var(--accent-blue); cursor: pointer; text-decoration: none; padding: 5px; margin-right: 5px;" title="Xem chi tiết hóa đơn"><i class="fa-solid fa-eye"></i></a>
+                                <?php if($o['status'] == 'pending'): ?>
+                                    <a href="admin.php?action=toggle_order&id=<?= $o['id'] ?>&status=processing" style="background: transparent; border: none; color: #00ff88; cursor: pointer; text-decoration: none; padding: 5px; margin-right: 5px;" title="Duyệt đơn ngay"><i class="fa-solid fa-check"></i></a>
+                                <?php endif; ?>
+                                <?php if($o['status'] != 'cancelled' && $o['status'] != 'delivered'): ?>
+                                    <a href="admin.php?action=toggle_order&id=<?= $o['id'] ?>&status=cancelled" onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')" style="background: transparent; border: none; color: #ffaa00; cursor: pointer; text-decoration: none; padding: 5px; margin-right: 5px;" title="Hủy đơn hàng"><i class="fa-solid fa-ban"></i></a>
+                                <?php endif; ?>
+                                <a href="admin.php?action=delete_order&id=<?= $o['id'] ?>" onclick="return confirm('Bạn có chắc muốn xóa vĩnh viễn đơn hàng này?')" style="background: transparent; border: none; color: #ff4d4d; cursor: pointer; text-decoration: none; padding: 5px;" title="Xóa vĩnh viễn"><i class="fa-solid fa-trash"></i></a>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -633,8 +639,9 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
                                 </td>
                                 <td><?= htmlspecialchars($c['email']) ?></td>
                                 <td><?= date('d/m/Y', strtotime($c['created_at'])) ?></td>
-                                <td>
-                                    <a href="admin.php?action=delete_user&id=<?= $c['id'] ?>" onclick="return confirm('Xóa khách hàng này sẽ xóa toàn bộ đơn hàng của họ. Bạn có chắc chắn?')" style="background: transparent; border: none; color: #ff4d4d; cursor: pointer; text-decoration: none;"><i class="fa-solid fa-trash"></i> Xóa</a>
+                                 <td>
+                                    <button onclick="alert('Tính năng xem chi tiết khách hàng đang được phát triển!')" style="background: transparent; border: none; color: var(--accent-blue); cursor: pointer; text-decoration: none; padding: 5px; margin-right: 10px;" title="Xem thông tin chi tiết"><i class="fa-solid fa-address-card"></i> Chi tiết</button>
+                                    <a href="admin.php?action=delete_user&id=<?= $c['id'] ?>" onclick="return confirm('Xóa khách hàng này sẽ xóa toàn bộ đơn hàng của họ. Bạn có chắc chắn?')" style="background: transparent; border: none; color: #ff4d4d; cursor: pointer; text-decoration: none;" title="Xóa tài khoản"><i class="fa-solid fa-user-slash"></i> Xóa</a>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
