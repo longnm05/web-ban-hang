@@ -426,48 +426,96 @@ document.addEventListener('DOMContentLoaded', () => {
     // 8. Checkout Logic
     const checkoutBtn = document.getElementById('checkoutBtn');
     if (checkoutBtn) {
-        checkoutBtn.addEventListener('click', () => {
+        if (window.location.pathname.includes('checkout_ui.php') || window.location.pathname.includes('checkout.php')) {
+            return;
+        }
+
+        checkoutBtn.addEventListener('click', (e) => {
             if (cart.length === 0) {
                 alert('Giỏ hàng của bạn đang trống!');
+                e.preventDefault();
                 return;
             }
-            
-            const originalText = checkoutBtn.innerHTML;
-            checkoutBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
-            checkoutBtn.disabled = true;
-
-            fetch('checkout.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ cart: cart })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Thanh toán thành công! Mã đơn hàng của bạn là: #' + data.order_id);
-                    // Xóa giỏ hàng sau khi thanh toán thành công
-                    cart = [];
-                    saveCart();
-                    // Chuyển hướng tới trang hóa đơn hoặc lịch sử
-                    window.location.href = 'invoice.php?id=' + data.order_id;
-                } else {
-                    alert('Lỗi: ' + data.message);
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại!');
-            })
-            .finally(() => {
-                checkoutBtn.innerHTML = originalText;
-                checkoutBtn.disabled = false;
-            });
+            window.location.href = 'checkout_ui.php';
         });
     }
 
+    // 9. Wishlist Logic
+    const wishlistBadge = document.querySelector('.fa-heart')?.nextElementSibling;
+    if(wishlistBadge && !wishlistBadge.id) wishlistBadge.id = 'wishlistBadge';
+    
+    function updateWishlistBadge() {
+        const badge = document.getElementById('wishlistBadge');
+        if(badge) {
+            const list = JSON.parse(localStorage.getItem('novaWishlist') || '[]');
+            badge.innerText = list.length;
+        }
+    }
+    updateWishlistBadge();
+
+    window.toggleWishlist = function(btn, id, name, price, image) {
+        let list = JSON.parse(localStorage.getItem('novaWishlist') || '[]');
+        const index = list.findIndex(i => i.id === id);
+        if(index >= 0) {
+            list.splice(index, 1);
+            btn.classList.remove('active');
+            const icon = btn.querySelector('i');
+            if(icon) {
+                icon.classList.remove('fa-solid');
+                icon.classList.add('fa-regular');
+            }
+        } else {
+            list.push({id, name, price, image});
+            btn.classList.add('active');
+            const icon = btn.querySelector('i');
+            if(icon) {
+                icon.classList.remove('fa-regular');
+                icon.classList.add('fa-solid');
+            }
+        }
+        localStorage.setItem('novaWishlist', JSON.stringify(list));
+        updateWishlistBadge();
+    };
+
+    // Khởi tạo trạng thái nút Wishlist khi load trang chi tiết sản phẩm
+    const btnWishlist = document.querySelector('.btn-wishlist');
+    if(btnWishlist) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const pid = urlParams.get('id');
+        if(pid) {
+            const list = JSON.parse(localStorage.getItem('novaWishlist') || '[]');
+            if(list.findIndex(i => i.id === pid) >= 0) {
+                btnWishlist.classList.add('active');
+                const icon = btnWishlist.querySelector('i');
+                if(icon) {
+                    icon.classList.remove('fa-regular');
+                    icon.classList.add('fa-solid');
+                }
+            }
+        }
+    }
+
+    // 10. Newsletter Submit Logic
+    const newsletterForms = document.querySelectorAll('.newsletter-section form');
+    newsletterForms.forEach(form => {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Cảm ơn bạn đã đăng ký nhận tin! Chúng tôi sẽ gửi những cập nhật và ưu đãi mới nhất vào email của bạn.');
+            form.reset();
+        });
+    });
+
+    // 11. Pagination click logic (giả lập)
+    const pageBtns = document.querySelectorAll('.page-btn');
+    pageBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            if(btn.tagName.toLowerCase() === 'a' && btn.getAttribute('href') === '#') {
+                e.preventDefault();
+                pageBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                // Scroll to top
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            }
+        });
+    });
 });

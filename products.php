@@ -2,9 +2,40 @@
 session_start();
 require_once 'db.php';
 
-// Lấy tất cả sản phẩm
-$stmt = $conn->prepare("SELECT p.*, c.name as cat_name FROM products p JOIN categories c ON p.category_id = c.id");
-$stmt->execute();
+// Lấy danh mục để hiển thị ở Sidebar
+$stmtCat = $conn->prepare("SELECT * FROM categories");
+$stmtCat->execute();
+$categories = $stmtCat->fetchAll();
+
+// Xử lý Lọc & Sắp xếp
+$where = [];
+$params = [];
+
+if (!empty($_GET['category'])) {
+    $where[] = "p.category_id = ?";
+    $params[] = $_GET['category'];
+}
+if (!empty($_GET['min_price'])) {
+    $where[] = "p.price >= ?";
+    $params[] = $_GET['min_price'];
+}
+if (!empty($_GET['max_price'])) {
+    $where[] = "p.price <= ?";
+    $params[] = $_GET['max_price'];
+}
+
+$whereSQL = count($where) > 0 ? "WHERE " . implode(" AND ", $where) : "";
+
+$orderSQL = "ORDER BY p.created_at DESC";
+if (!empty($_GET['sort'])) {
+    if ($_GET['sort'] == 'price-asc') $orderSQL = "ORDER BY p.price ASC";
+    elseif ($_GET['sort'] == 'price-desc') $orderSQL = "ORDER BY p.price DESC";
+    elseif ($_GET['sort'] == 'popular') $orderSQL = "ORDER BY RAND()"; // Mock for popular
+}
+
+$sql = "SELECT p.*, c.name as cat_name FROM products p JOIN categories c ON p.category_id = c.id $whereSQL $orderSQL";
+$stmt = $conn->prepare($sql);
+$stmt->execute($params);
 $products = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -184,8 +215,9 @@ $products = $stmt->fetchAll();
         <div class="nav-links">
             <a href="products.php" class="nav-item active">Khám Phá</a>
             <a href="products.php?category=nam" class="nav-item">Nam</a>
-            <a href="products.php?category=nu" class="nav-item">Nữ</a>
-            <a href="#" class="nav-icon" id="openCartBtn"><i class="fa-solid fa-bag-shopping"></i><span class="badge" id="cartBadge">0</span></a>
+            <a href="wishlist.php" class="nav-icon" title="Yêu Thích"><i class="fa-solid fa-heart"></i><span class="badge" id="wishlistBadge">0</span></a>
+            <a href="#" class="nav-icon" onclick="alert('Bạn không có thông báo mới nào.'); return false;" title="Thông Báo"><i class="fa-solid fa-bell"></i><span class="badge">0</span></a>
+            <a href="#" class="nav-icon" id="openCartBtn" title="Giỏ Hàng"><i class="fa-solid fa-cart-shopping"></i><span class="badge" id="cartBadge">0</span></a>
             <a href="history.php" class="nav-icon" title="Lịch Sử Đơn Hàng"><i class="fa-solid fa-clock-rotate-left"></i></a>
             <a href="profile.php" class="nav-icon" title="Hồ Sơ Của Tôi"><i class="fa-solid fa-user"></i></a>
         </div>
@@ -199,23 +231,21 @@ $products = $stmt->fetchAll();
             <div class="filter-group">
                 <h3 class="filter-title">Danh Mục <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem;"></i></h3>
                 <ul class="filter-list">
-                    <li><label><input type="checkbox" checked> Tất cả sản phẩm</label></li>
-                    <li><label><input type="checkbox"> Áo Nam</label></li>
-                    <li><label><input type="checkbox"> Áo Nữ</label></li>
-                    <li><label><input type="checkbox"> Giày Thể Thao</label></li>
-                    <li><label><input type="checkbox"> Phụ Kiện</label></li>
-                    <li><label><input type="checkbox"> Outerwear</label></li>
+                    <li><label><input type="radio" name="cat" value="" <?= empty($_GET['category']) ? 'checked' : '' ?> onchange="applyFilter('category', '')"> Tất cả sản phẩm</label></li>
+                    <?php foreach($categories as $cat): ?>
+                    <li><label><input type="radio" name="cat" value="<?= $cat['id'] ?>" <?= (isset($_GET['category']) && $_GET['category'] == $cat['id']) ? 'checked' : '' ?> onchange="applyFilter('category', '<?= $cat['id'] ?>')"> <?= htmlspecialchars($cat['name']) ?></label></li>
+                    <?php endforeach; ?>
                 </ul>
             </div>
 
             <div class="filter-group">
                 <h3 class="filter-title">Khoảng Giá <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem;"></i></h3>
                 <div class="price-inputs">
-                    <input type="number" placeholder="Từ ($)">
+                    <input type="number" id="min_price" value="<?= $_GET['min_price'] ?? '' ?>" placeholder="Từ ($)">
                     <span>-</span>
-                    <input type="number" placeholder="Đến ($)">
+                    <input type="number" id="max_price" value="<?= $_GET['max_price'] ?? '' ?>" placeholder="Đến ($)">
                 </div>
-                <button class="btn btn-primary" style="width: 100%; margin-top: 15px; padding: 10px;">Lọc Giá</button>
+                <button class="btn btn-primary" style="width: 100%; margin-top: 15px; padding: 10px;" onclick="applyPriceFilter()">Lọc Giá</button>
             </div>
 
             <div class="filter-group">
@@ -238,11 +268,11 @@ $products = $stmt->fetchAll();
                     <p style="color: var(--text-muted); font-size: 0.9rem;">Hiển thị 1 - 9 trong số 45 kết quả</p>
                 </div>
                 <div>
-                    <select class="sort-select">
-                        <option value="newest">Mới nhất</option>
-                        <option value="price-asc">Giá: Thấp đến Cao</option>
-                        <option value="price-desc">Giá: Cao đến Thấp</option>
-                        <option value="popular">Phổ biến nhất</option>
+                    <select class="sort-select" onchange="applyFilter('sort', this.value)">
+                        <option value="newest" <?= (isset($_GET['sort']) && $_GET['sort'] == 'newest') ? 'selected' : '' ?>>Mới nhất</option>
+                        <option value="price-asc" <?= (isset($_GET['sort']) && $_GET['sort'] == 'price-asc') ? 'selected' : '' ?>>Giá: Thấp đến Cao</option>
+                        <option value="price-desc" <?= (isset($_GET['sort']) && $_GET['sort'] == 'price-desc') ? 'selected' : '' ?>>Giá: Cao đến Thấp</option>
+                        <option value="popular" <?= (isset($_GET['sort']) && $_GET['sort'] == 'popular') ? 'selected' : '' ?>>Phổ biến nhất</option>
                     </select>
                 </div>
             </div>
@@ -252,12 +282,12 @@ $products = $stmt->fetchAll();
                 <div class="product-card">
                     <div class="card-glow"></div>
                     <div class="card-image">
-                        <img src="<?= htmlspecialchars($row['image_url']) ?>" alt="<?= htmlspecialchars($row['name']) ?>">
+                        <a href="product_detail.php?id=<?= $row['id'] ?>"><img src="<?= htmlspecialchars($row['image_url']) ?>" alt="<?= htmlspecialchars($row['name']) ?>"></a>
                         <button class="quick-view"><i class="fa-solid fa-eye"></i></button>
                     </div>
                     <div class="card-info">
                         <span class="category"><?= htmlspecialchars($row['cat_name']) ?></span>
-                        <h3><?= htmlspecialchars($row['name']) ?></h3>
+                        <h3><a href="product_detail.php?id=<?= $row['id'] ?>" style="color:inherit; text-decoration:none;"><?= htmlspecialchars($row['name']) ?></a></h3>
                         <div class="price-row">
                             <span class="price">$<?= number_format($row['price'], 2) ?></span>
                             <button class="add-to-cart" data-id="<?= htmlspecialchars($row['id']) ?>" data-name="<?= htmlspecialchars($row['name']) ?>" data-price="<?= $row['price'] ?>" data-image="<?= htmlspecialchars($row['image_url']) ?>">
@@ -324,17 +354,67 @@ $products = $stmt->fetchAll();
 
     <script src="script.js"></script>
     <script>
-        // Check URL for category and simulate filtering
-        document.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const category = params.get('category');
-            if (category) {
-                // Find matching checkbox or logic to filter
-                // In a real app, this would filter from backend.
-                // For UI demo, we can just alert or toggle the checkboxes.
-                console.log("Filtering by: " + category);
+        function applyFilter(key, value) {
+            const url = new URL(window.location.href);
+            if (value) {
+                url.searchParams.set(key, value);
+            } else {
+                url.searchParams.delete(key);
             }
-        });
+            window.location.href = url.toString();
+        }
+
+        function applyPriceFilter() {
+            const min = document.getElementById('min_price').value;
+            const max = document.getElementById('max_price').value;
+            const url = new URL(window.location.href);
+            
+            if (min) url.searchParams.set('min_price', min);
+            else url.searchParams.delete('min_price');
+            
+            if (max) url.searchParams.set('max_price', max);
+            else url.searchParams.delete('max_price');
+            
+            window.location.href = url.toString();
+        }
     </script>
+
+    <!-- Newsletter Section -->
+    <section style="background: var(--primary-gradient); padding: 60px 5%; text-align: center; color: white; margin-top: 50px;">
+        <h2 style="font-family: var(--font-heading); font-size: 2.5rem; margin-bottom: 20px;">Nhận Ưu Đãi & Xu Hướng Mới</h2>
+        <p style="margin-bottom: 30px; font-size: 1.1rem; opacity: 0.9;">AI của chúng tôi sẽ gửi những bộ sưu tập cá nhân hóa trực tiếp đến email của bạn.</p>
+        <form style="display: flex; max-width: 500px; margin: 0 auto; gap: 10px;" onsubmit="event.preventDefault(); alert('Cảm ơn bạn đã đăng ký! Bạn sẽ nhận được email xác nhận sớm.');">
+            <input type="email" placeholder="Địa chỉ email của bạn..." required style="flex: 1; padding: 15px 20px; border: none; border-radius: 30px; font-size: 1rem; outline: none; font-family: var(--font-body);">
+            <button type="submit" style="padding: 15px 30px; background: #0a0a0c; color: white; border: none; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.3s;">Đăng Ký</button>
+        </form>
+    </section>
+
+    <footer style="background: rgba(10,10,12,0.9); border-top: 1px solid var(--glass-border); padding: 50px 5% 20px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; margin-bottom: 30px;">
+            <div>
+                <h3 style="font-family: var(--font-heading); margin-bottom: 15px;"><i class="fa-solid fa-microchip" style="color: var(--accent-blue);"></i> NovaStyle</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Trải nghiệm mua sắm e-commerce đỉnh cao với trợ lý AI phân tích phong cách.</p>
+            </div>
+            <div>
+                <h4 style="margin-bottom: 15px;">Chính sách</h4>
+                <ul style="list-style: none; padding: 0; color: var(--text-muted); font-size: 0.9rem; line-height: 2;">
+                    <li><a href="#" style="color: inherit; text-decoration: none;">Giao hàng & Nhận hàng</a></li>
+                    <li><a href="#" style="color: inherit; text-decoration: none;">Chính sách đổi trả</a></li>
+                    <li><a href="#" style="color: inherit; text-decoration: none;">Bảo mật thông tin</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 style="margin-bottom: 15px;">Liên hệ</h4>
+                <ul style="list-style: none; padding: 0; color: var(--text-muted); font-size: 0.9rem; line-height: 2;">
+                    <li><i class="fa-solid fa-phone"></i> 1900 6868</li>
+                    <li><i class="fa-solid fa-envelope"></i> support@novastyle.ai</li>
+                    <li><i class="fa-solid fa-location-dot"></i> 123 Tech Street, HCMC</li>
+                </ul>
+            </div>
+        </div>
+        <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">&copy; 2026 NovaStyle AI. Bản quyền thuộc về tương lai.</p>
+    </footer>
+
+    <?php include 'chat_widget.php'; ?>
 </body>
 </html>

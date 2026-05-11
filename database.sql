@@ -14,7 +14,10 @@ USE `novastyle_db`;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `full_name` varchar(100) NOT NULL,
+  `gender` varchar(20) DEFAULT NULL,
   `email` varchar(100) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `address` text DEFAULT NULL,
   `password_hash` varchar(255) NOT NULL,
   `role` enum('customer','admin') DEFAULT 'customer',
   `ai_style_preference` json DEFAULT NULL COMMENT 'JSON lưu thói quen mua sắm cho AI phân tích',

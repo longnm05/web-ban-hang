@@ -462,6 +462,7 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
                 <li><a href="#" class="admin-tab-link" onclick="switchTab('products-tab', this)"><i class="fa-solid fa-box"></i> Quản Lý Sản Phẩm</a></li>
                 <li><a href="#" class="admin-tab-link" onclick="switchTab('orders-tab', this)"><i class="fa-solid fa-file-invoice-dollar"></i> Quản Lý Đơn Hàng</a></li>
                 <li><a href="#" class="admin-tab-link" onclick="switchTab('customers-tab', this)"><i class="fa-solid fa-users"></i> Quản Lý Khách Hàng</a></li>
+                <li><a href="#" class="admin-tab-link" onclick="switchTab('chat-tab', this)"><i class="fa-solid fa-comments"></i> Hỗ Trợ Khách Hàng</a></li>
                 <li><a href="#" class="admin-tab-link" onclick="switchTab('settings-tab', this)"><i class="fa-solid fa-robot"></i> Cấu Hình AI</a></li>
                 <li style="margin-top: auto;"><a href="logout.php" style="color: #ff4d4d;"><i class="fa-solid fa-right-from-bracket"></i> Đăng Xuất</a></li>
             </ul>
@@ -592,6 +593,32 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
                 </div>
             </div>
 
+            <!-- TAB: Hỗ Trợ Khách Hàng -->
+            <div class="admin-tab-content" id="chat-tab" style="display: none;">
+                <div class="table-section" style="display: flex; height: 600px; padding: 0; overflow: hidden;">
+                    <div style="width: 300px; border-right: 1px solid var(--glass-border); display: flex; flex-direction: column;">
+                        <div style="padding: 20px; border-bottom: 1px solid var(--glass-border); background: #f9f9f9;">
+                            <h3 style="margin: 0;"><i class="fa-solid fa-inbox"></i> Tin Nhắn</h3>
+                        </div>
+                        <div id="adminUserList" style="flex: 1; overflow-y: auto;">
+                            <!-- Danh sách chat -->
+                        </div>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column;">
+                        <div style="padding: 20px; border-bottom: 1px solid var(--glass-border); background: #f9f9f9;">
+                            <h3 id="adminChatTitle" style="margin: 0; color: var(--text-main);">Chọn một khách hàng để chat</h3>
+                        </div>
+                        <div id="adminChatBody" style="flex: 1; overflow-y: auto; padding: 20px; background: rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 10px;">
+                            <!-- Nội dung tin nhắn -->
+                        </div>
+                        <div style="padding: 20px; border-top: 1px solid var(--glass-border); display: flex; gap: 10px; background: #fff;">
+                            <input type="text" id="adminChatInput" placeholder="Nhập tin nhắn gửi cho khách..." style="flex: 1; padding: 12px 20px; border-radius: 30px; border: 1px solid var(--glass-border); outline: none;" disabled>
+                            <button id="adminSendBtn" class="btn btn-primary" style="border-radius: 50%; width: 45px; height: 45px; padding: 0; display: flex; justify-content: center; align-items: center;" disabled><i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- TAB: Cấu Hình Trợ Lý AI -->
             <div class="admin-tab-content" id="settings-tab" style="display: none;">
                 <div class="table-section">
@@ -700,6 +727,10 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
             if(targetTab) {
                 targetTab.style.display = 'block';
                 if(element) element.classList.add('active');
+            }
+            
+            if(tabId === 'chat-tab') {
+                loadConversations();
             }
         }
 
@@ -816,6 +847,87 @@ $totalOrders = $conn->query("SELECT COUNT(*) FROM orders")->fetchColumn();
         function closeProductModal() {
             document.getElementById('productModalOverlay').classList.remove('active');
         }
+
+        // Chat Logic cho Admin
+        let currentChatUserId = null;
+
+        function loadConversations() {
+            fetch('chat_api.php?action=fetch_conversations')
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    const list = document.getElementById('adminUserList');
+                    list.innerHTML = '';
+                    if(data.conversations.length === 0) {
+                        list.innerHTML = '<div style="padding: 20px; color: var(--text-muted); text-align: center;">Chưa có tin nhắn nào</div>';
+                    }
+                    data.conversations.forEach(c => {
+                        list.innerHTML += `
+                            <div style="padding: 15px 20px; border-bottom: 1px solid var(--glass-border); cursor: pointer; transition: 0.3s; background: ${currentChatUserId == c.id ? 'rgba(138,43,226,0.1)' : 'transparent'};" onclick="openAdminChat(${c.id}, '${c.full_name}')" onmouseover="this.style.background='rgba(0,0,0,0.02)'" onmouseout="this.style.background='${currentChatUserId == c.id ? 'rgba(138,43,226,0.1)' : 'transparent'}'">
+                                <strong style="color: var(--text-main);">${c.full_name}</strong>
+                                ${c.unread_count > 0 ? `<span class="badge" style="background:#ff416c; float:right;">${c.unread_count}</span>` : ''}
+                                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">${c.email}</div>
+                            </div>
+                        `;
+                    });
+                }
+            });
+        }
+
+        function openAdminChat(userId, name) {
+            currentChatUserId = userId;
+            document.getElementById('adminChatTitle').innerText = 'Chat với ' + name;
+            document.getElementById('adminChatInput').disabled = false;
+            document.getElementById('adminSendBtn').disabled = false;
+            loadAdminChatMessages();
+            loadConversations();
+        }
+
+        function loadAdminChatMessages() {
+            if(!currentChatUserId) return;
+            fetch('chat_api.php?action=fetch&user_id=' + currentChatUserId)
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    const body = document.getElementById('adminChatBody');
+                    body.innerHTML = '';
+                    data.messages.forEach(m => {
+                        const isMe = m.sender_id == data.current_user;
+                        body.innerHTML += `
+                            <div style="max-width: 70%; padding: 12px 18px; border-radius: 20px; margin-bottom: 10px; clear: both; ${isMe ? 'background: linear-gradient(135deg, #8a2be2, #4a00e0); color: white; align-self: flex-end; border-bottom-right-radius: 5px; margin-left: auto;' : 'background: white; border: 1px solid var(--glass-border); color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-right: auto;'}">
+                                ${m.message}
+                            </div>
+                        `;
+                    });
+                    body.scrollTop = body.scrollHeight;
+                }
+            });
+        }
+
+        document.getElementById('adminSendBtn')?.addEventListener('click', () => {
+            const input = document.getElementById('adminChatInput');
+            const msg = input.value.trim();
+            if(!msg || !currentChatUserId) return;
+            
+            input.value = '';
+            fetch('chat_api.php?action=send', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({receiver_id: currentChatUserId, message: msg})
+            }).then(() => loadAdminChatMessages());
+        });
+
+        document.getElementById('adminChatInput')?.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') document.getElementById('adminSendBtn').click();
+        });
+
+        // Polling tin nhắn mới mỗi 3 giây
+        setInterval(() => {
+            if(document.getElementById('chat-tab').style.display === 'block') {
+                loadConversations();
+                loadAdminChatMessages();
+            }
+        }, 3000);
     </script>
 </body>
 </html>

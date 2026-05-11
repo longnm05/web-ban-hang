@@ -23,12 +23,24 @@ $cart = $data['cart'];
 $stmtUser = $conn->prepare("SELECT address FROM users WHERE id = ?");
 $stmtUser->execute([$userId]);
 $user = $stmtUser->fetch();
-$shippingAddress = $user['address'] ?? 'Chưa cập nhật địa chỉ';
+
+// Đọc thông tin giao hàng từ request (nếu có)
+$rawAddress = $data['shipping_address'] ?? $user['address'] ?? 'Chưa cập nhật địa chỉ';
+$customerName = $data['customer_name'] ?? '';
+$customerPhone = $data['customer_phone'] ?? '';
+$paymentMethod = $data['payment_method'] ?? 'Thanh toán khi nhận hàng (COD)';
+$shippingFee = isset($data['shipping_fee']) ? floatval($data['shipping_fee']) : 0;
+
+$shippingAddress = $rawAddress;
+if (!empty($customerName) && !empty($customerPhone)) {
+    $shippingAddress = "Người nhận: $customerName | SĐT: $customerPhone | Địa chỉ: $rawAddress | PTTT: $paymentMethod";
+}
 
 $totalAmount = 0;
 foreach ($cart as $item) {
     $totalAmount += $item['price'] * $item['quantity'];
 }
+$totalAmount += $shippingFee; // Cộng thêm phí giao hàng
 
 try {
     $conn->beginTransaction();
@@ -40,8 +52,25 @@ try {
 
     // 2. Chèn vào bảng order_items
     $stmtItem = $conn->prepare("INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase) VALUES (?, ?, ?, ?)");
+    $stmtCheck = $conn->prepare("SELECT id FROM products WHERE id = ?");
+    
     foreach ($cart as $item) {
-        $stmtItem->execute([$orderId, $item['id'], $item['quantity'], $item['price']]);
+        $product_id = $item['id'];
+        $base_id = $product_id;
+        
+        // Tách ID (bỏ phần size như _L, _M đi)
+        $parts = explode('_', $product_id);
+        while(count($parts) > 0) {
+            $test_id = implode('_', $parts);
+            $stmtCheck->execute([$test_id]);
+            if ($stmtCheck->fetch()) {
+                $base_id = $test_id;
+                break;
+            }
+            array_pop($parts);
+        }
+        
+        $stmtItem->execute([$orderId, $base_id, $item['quantity'], $item['price']]);
     }
 
     $conn->commit();

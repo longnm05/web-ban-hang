@@ -47,9 +47,9 @@ $products = $stmt->fetchAll();
             <a href="products.php" class="nav-item" style="text-decoration:none; color:var(--text-main); font-weight:600; margin-right:15px;">Sản Phẩm</a>
             <a href="products.php?category=nam" class="nav-item" style="text-decoration:none; color:var(--text-main); font-weight:600; margin-right:15px;">Nam</a>
             <a href="products.php?category=nu" class="nav-item" style="text-decoration:none; color:var(--text-main); font-weight:600; margin-right:15px;">Nữ</a>
-            <a href="#" class="nav-icon"><i class="fa-solid fa-heart"></i><span class="badge">2</span></a>
-            <a href="#" class="nav-icon" id="openCartBtn"><i class="fa-solid fa-cart-shopping"></i><span class="badge"
-                    id="cartBadge">0</span></a>
+            <a href="wishlist.php" class="nav-icon" title="Yêu Thích"><i class="fa-solid fa-heart"></i><span class="badge" id="wishlistBadge">0</span></a>
+            <a href="#" class="nav-icon" onclick="alert('Bạn không có thông báo mới nào.'); return false;" title="Thông Báo"><i class="fa-solid fa-bell"></i><span class="badge">0</span></a>
+            <a href="#" class="nav-icon" id="openCartBtn" title="Giỏ Hàng"><i class="fa-solid fa-cart-shopping"></i><span class="badge" id="cartBadge">0</span></a>
             <a href="history.php" class="nav-icon" title="Lịch Sử Đơn Hàng">
                 <i class="fa-solid fa-clock-rotate-left"></i>
             </a>
@@ -68,7 +68,7 @@ $products = $stmt->fetchAll();
                 cho bạn những đề xuất hoàn hảo nhất.</p>
             <div class="hero-actions">
                 <button class="btn btn-primary" onclick="window.location.href='products.php'">Khám phá Ngay <i class="fa-solid fa-arrow-right"></i></button>
-                <button class="btn btn-secondary">Xem Video Demo <i class="fa-solid fa-play"></i></button>
+                <button class="btn btn-secondary" onclick="alert('Tính năng Video Demo đang được cập nhật.');">Xem Video Demo <i class="fa-solid fa-play"></i></button>
             </div>
         </div>
         <div class="hero-visual">
@@ -129,12 +129,12 @@ $products = $stmt->fetchAll();
                 <div class="card-glow"></div>
                 <div class="card-image">
                     <div class="ai-match"><?= rand(85, 99) ?>% Match</div>
-                    <img src="<?= htmlspecialchars($row['image_url']) ?>" alt="<?= htmlspecialchars($row['name']) ?>">
+                    <a href="product_detail.php?id=<?= $row['id'] ?>"><img src="<?= htmlspecialchars($row['image_url']) ?>" alt="<?= htmlspecialchars($row['name']) ?>"></a>
                     <button class="quick-view"><i class="fa-solid fa-eye"></i></button>
                 </div>
                 <div class="card-info">
                     <span class="category"><?= htmlspecialchars($row['cat_name']) ?></span>
-                    <h3><?= htmlspecialchars($row['name']) ?></h3>
+                    <h3><a href="product_detail.php?id=<?= $row['id'] ?>" style="color:inherit; text-decoration:none;"><?= htmlspecialchars($row['name']) ?></a></h3>
                     <div class="price-row">
                         <span class="price">$<?= number_format($row['price'], 2) ?></span>
                         <button class="add-to-cart" data-id="<?= htmlspecialchars($row['id']) ?>" data-name="<?= htmlspecialchars($row['name']) ?>" data-price="<?= $row['price'] ?>" data-image="<?= htmlspecialchars($row['image_url']) ?>">
@@ -147,33 +147,7 @@ $products = $stmt->fetchAll();
         </div>
     </section>
 
-    <!-- Floating AI Chatbot -->
-    <div class="ai-bot-widget" id="aiBotBtn">
-        <div class="pulse-ring"></div>
-        <i class="fa-solid fa-robot"></i>
-    </div>
-
-    <div class="chat-window glass-panel" id="chatWindow">
-        <div class="chat-header">
-            <div>
-                <h4><i class="fa-solid fa-sparkles"></i> AI Assistant</h4>
-                <span class="status">Đang trực tuyến</span>
-            </div>
-            <button id="closeChat"><i class="fa-solid fa-times"></i></button>
-        </div>
-        <div class="chat-body" id="chatBody">
-            <div class="message ai-message">
-                Xin chào! Tôi là trợ lý AI. Dựa trên lịch sử xem của bạn, bạn có vẻ đang tìm kiếm giày thể thao. Tôi có
-                thể gợi ý vài đôi không?
-            </div>
-        </div>
-        <div class="chat-input">
-            <input type="text" id="chatInput" placeholder="Nhập yêu cầu bằng tiếng tự nhiên...">
-            <button id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
-        </div>
-    </div>
-
-    <!-- Login Modal Removed (Using separate login.php) -->
+    <!-- AI Chatbot removed -->
 
     <!-- Shopping Cart Sidebar -->
     <div class="cart-overlay" id="cartOverlay"></div>
@@ -226,6 +200,16 @@ $products = $stmt->fetchAll();
         </div>
     </div>
 
+    <!-- Newsletter Section -->
+    <section style="background: var(--primary-gradient); padding: 60px 5%; text-align: center; color: white; margin-top: 50px;">
+        <h2 style="font-family: var(--font-heading); font-size: 2.5rem; margin-bottom: 20px;">Nhận Ưu Đãi & Xu Hướng Mới</h2>
+        <p style="margin-bottom: 30px; font-size: 1.1rem; opacity: 0.9;">AI của chúng tôi sẽ gửi những bộ sưu tập cá nhân hóa trực tiếp đến email của bạn.</p>
+        <form style="display: flex; max-width: 500px; margin: 0 auto; gap: 10px;" onsubmit="event.preventDefault(); alert('Cảm ơn bạn đã đăng ký! Bạn sẽ nhận được email xác nhận sớm.');">
+            <input type="email" placeholder="Địa chỉ email của bạn..." required style="flex: 1; padding: 15px 20px; border: none; border-radius: 30px; font-size: 1rem; outline: none; font-family: var(--font-body);">
+            <button type="submit" style="padding: 15px 30px; background: #0a0a0c; color: white; border: none; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.3s;">Đăng Ký</button>
+        </form>
+    </section>
+
     <footer style="background: rgba(10,10,12,0.9); border-top: 1px solid var(--glass-border); padding: 50px 5% 20px;">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; margin-bottom: 30px;">
             <div>
@@ -253,6 +237,7 @@ $products = $stmt->fetchAll();
     </footer>
 
     <script src="script.js"></script>
+    <?php include 'chat_widget.php'; ?>
 </body>
 
 </html>

@@ -403,7 +403,7 @@ $orders = $stmtOrders->fetchAll();
                     <h4 style="margin-top: 30px; margin-bottom: 10px;">Phong Cách (Style)</h4>
                     <div class="style-tags">
                         <?php 
-                        $all_styles = ['Streetwear', 'Minimalism', 'Vintage / Retro', 'Techwear', 'Smart Casual'];
+                        $all_styles = ['Thời trang Hằng ngày (Lifestyle)', 'Chạy bộ (Running)', 'Tập Gym (Training)', 'Bóng đá (Football)', 'Bóng rổ (Basketball)', 'Yoga & Studio', 'Streetwear'];
                         foreach($all_styles as $s): 
                             $checked = in_array($s, $selected_styles) ? 'checked' : '';
                         ?>
@@ -417,7 +417,7 @@ $orders = $stmtOrders->fetchAll();
                     <h4 style="margin-top: 30px; margin-bottom: 10px;">Màu Sắc Ưa Thích</h4>
                     <div class="style-tags">
                         <?php 
-                        $all_colors = ['Trắng / Đen', 'Tone Đất (Be, Nâu)', 'Neon / Nổi Bật', 'Pastel'];
+                        $all_colors = ['Trắng / Đen cơ bản', 'Neon / Nổi Bật', 'Tone Pastel', 'Màu nóng (Đỏ/Cam) Thể thao'];
                         foreach($all_colors as $c): 
                             $checked = in_array($c, $selected_colors) ? 'checked' : '';
                         ?>
